@@ -42,6 +42,11 @@ const AdminSettings = () => {
     og_image: '',
     twitter_handle: ''
   });
+  const [recaptchaSettings, setRecaptchaSettings] = useState({
+    enabled: false,
+    site_key: '',
+    secret_key: ''
+  });
   const [recipientEmail, setRecipientEmail] = useState('');
 
   useEffect(() => {
@@ -68,6 +73,9 @@ const AdminSettings = () => {
       }
       if (response.data.settings.branding) {
         setBranding(response.data.settings.branding);
+      }
+      if (response.data.settings.recaptcha_settings) {
+        setRecaptchaSettings(response.data.settings.recaptcha_settings);
       }
     } catch (error) {
       if (error.response?.status === 401) {
@@ -114,7 +122,8 @@ const AdminSettings = () => {
         { 
           email_settings: emailSettings, 
           seo_settings: seoSettings,
-          branding: branding
+          branding: branding,
+          recaptcha_settings: recaptchaSettings
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -224,18 +233,22 @@ const AdminSettings = () => {
       </div>
 
       <Tabs defaultValue="branding" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="branding">
             <Image className="mr-2" size={16} />
             Branding
           </TabsTrigger>
           <TabsTrigger value="email">
             <Mail className="mr-2" size={16} />
-            Email Settings
+            Email
           </TabsTrigger>
           <TabsTrigger value="seo">
             <Globe className="mr-2" size={16} />
-            SEO & Analytics
+            SEO
+          </TabsTrigger>
+          <TabsTrigger value="security">
+            <Save className="mr-2" size={16} />
+            Security
           </TabsTrigger>
         </TabsList>
 
