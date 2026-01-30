@@ -140,6 +140,7 @@ const Footer = ({ onCTAClick, onTicketClick }) => {
         <div className="border-t border-gray-800 pt-8">
           <div className="text-center text-gray-400 text-sm">
             <p>&copy; {new Date().getFullYear()} {branding.company_name}. All rights reserved. Results First.</p>
+            <p className="mt-2">Maintained & Developed By <a href="https://usafe.in" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-400 transition-colors">Urbanesafe LLP</a></p>
           </div>
         </div>
       </div>

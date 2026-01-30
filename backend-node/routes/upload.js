@@ -122,7 +122,7 @@ exports.uploadFavicon = [
       databases.settings.data.branding.favicon_url = fileUrl;
       await databases.settings.write();
       
-      console.log(`✓ Favicon uploaded: ${req.file.filename} (${file.mimetype})`);
+      console.log(`✓ Favicon uploaded: ${req.file.filename} (${req.file.mimetype})`);
       
       res.json({
         success: true,

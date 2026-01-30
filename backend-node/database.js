@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Database file paths
-const DB_DIR = path.join(__dirname, '../database');
+const DB_DIR = path.join(__dirname, 'database');
 const dbFiles = {
   admins: path.join(DB_DIR, 'admins.json'),
   submissions: path.join(DB_DIR, 'submissions.json'),
