@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class IXADigitalAPITester:
-    def __init__(self, base_url="https://growth-engine-49.preview.emergentagent.com"):
+    def __init__(self, base_url="https://ixadigital.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
