@@ -7,7 +7,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { Save, Mail, Send, Globe, TrendingUp } from 'lucide-react';
+import { Save, Mail, Send, Globe, TrendingUp, Upload, Image } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -16,6 +16,13 @@ const AdminSettings = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
+  const [branding, setBranding] = useState({
+    logo_url: '',
+    favicon_url: '',
+    company_name: 'IXA Digital'
+  });
   const [emailSettings, setEmailSettings] = useState({
     smtp_host: 'smtp.gmail.com',
     smtp_port: 587,
@@ -59,6 +66,9 @@ const AdminSettings = () => {
       if (response.data.settings.seo_settings) {
         setSeoSettings(response.data.settings.seo_settings);
       }
+      if (response.data.settings.branding) {
+        setBranding(response.data.settings.branding);
+      }
     } catch (error) {
       if (error.response?.status === 401) {
         navigate('/admin/login');
@@ -101,7 +111,11 @@ const AdminSettings = () => {
       const token = localStorage.getItem('adminToken');
       await axios.put(
         `${BACKEND_URL}/api/admin/settings`,
-        { email_settings: emailSettings, seo_settings: seoSettings },
+        { 
+          email_settings: emailSettings, 
+          seo_settings: seoSettings,
+          branding: branding
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Settings saved successfully');
@@ -126,6 +140,78 @@ const AdminSettings = () => {
     }
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(
+        `${BACKEND_URL}/api/admin/upload-logo`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      setBranding({ ...branding, logo_url: response.data.url });
+      toast.success('Logo uploaded successfully!');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload logo');
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const handleFaviconUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file size (max 1MB)
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error('File size must be less than 1MB');
+      return;
+    }
+
+    setIsUploadingFavicon(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(
+        `${BACKEND_URL}/api/admin/upload-favicon`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      setBranding({ ...branding, favicon_url: response.data.url });
+      toast.success('Favicon uploaded successfully!');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload favicon');
+    } finally {
+      setIsUploadingFavicon(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="p-8 text-center">Loading settings...</div>;
   }
@@ -137,8 +223,12 @@ const AdminSettings = () => {
         <p className="text-gray-600 mt-2">Configure email notifications and SEO settings</p>
       </div>
 
-      <Tabs defaultValue="email" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="branding" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="branding">
+            <Image className="mr-2" size={16} />
+            Branding
+          </TabsTrigger>
           <TabsTrigger value="email">
             <Mail className="mr-2" size={16} />
             Email Settings
@@ -148,6 +238,91 @@ const AdminSettings = () => {
             SEO & Analytics
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="branding">
+          <Card>
+            <CardHeader>
+              <CardTitle>Logo & Favicon</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label>Company Name</Label>
+                <Input
+                  value={branding.company_name}
+                  onChange={(e) => setBranding({ ...branding, company_name: e.target.value })}
+                  placeholder="IXA Digital"
+                />
+              </div>
+
+              {/* Logo Upload */}
+              <div>
+                <Label>Website Logo</Label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Recommended: PNG or SVG format, max 5MB
+                </p>
+                {branding.logo_url && (
+                  <div className="mb-3 p-4 bg-gray-50 rounded-lg border">
+                    <p className="text-xs text-gray-600 mb-2">Current Logo:</p>
+                    <img
+                      src={branding.logo_url.startsWith('http') ? branding.logo_url : `${BACKEND_URL}${branding.logo_url}`}
+                      alt="Current Logo"
+                      className="h-16 object-contain"
+                    />
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                    onChange={handleLogoUpload}
+                    disabled={isUploadingLogo}
+                    className="flex-1"
+                  />
+                  <Button disabled={isUploadingLogo} variant="outline">
+                    <Upload size={16} className="mr-2" />
+                    {isUploadingLogo ? 'Uploading...' : 'Upload'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Favicon Upload */}
+              <div>
+                <Label>Favicon</Label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Recommended: ICO or PNG format (16x16 or 32x32), max 1MB
+                </p>
+                {branding.favicon_url && (
+                  <div className="mb-3 p-4 bg-gray-50 rounded-lg border">
+                    <p className="text-xs text-gray-600 mb-2">Current Favicon:</p>
+                    <img
+                      src={branding.favicon_url.startsWith('http') ? branding.favicon_url : `${BACKEND_URL}${branding.favicon_url}`}
+                      alt="Current Favicon"
+                      className="h-8 w-8 object-contain"
+                    />
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Input
+                    type="file"
+                    accept="image/x-icon,image/vnd.microsoft.icon,image/png,image/jpeg"
+                    onChange={handleFaviconUpload}
+                    disabled={isUploadingFavicon}
+                    className="flex-1"
+                  />
+                  <Button disabled={isUploadingFavicon} variant="outline">
+                    <Upload size={16} className="mr-2" />
+                    {isUploadingFavicon ? 'Uploading...' : 'Upload'}
+                  </Button>
+                </div>
+              </div>
+
+              <Button onClick={saveSettings} disabled={isSaving} className="w-full bg-red-600 hover:bg-red-700">
+                <Save size={16} className="mr-2" />
+                {isSaving ? 'Saving...' : 'Save Branding Settings'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="email">
           <Card>
