@@ -18,6 +18,7 @@ import AdminLogin from "./components/AdminLogin";
 import AdminDashboard from "./components/AdminDashboard";
 import AdminSettings from "./components/AdminSettings";
 import AdminTickets from "./components/AdminTickets";
+import ContentEditor from "./components/ContentEditor";
 import TrackTicket from "./components/TrackTicket";
 
 const Home = () => {
@@ -69,6 +70,7 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/tickets" element={<AdminTickets />} />
+          <Route path="/admin/content" element={<ContentEditor />} />
         </Routes>
       </BrowserRouter>
       <Toaster />

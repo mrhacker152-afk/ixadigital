@@ -18,7 +18,8 @@ import {
   CheckCircle,
   Clock,
   Settings,
-  Ticket
+  Ticket,
+  Edit
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -151,6 +152,10 @@ const AdminDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <Button onClick={() => navigate('/admin/content')} variant="outline" size="sm">
+                <Edit size={16} className="mr-2" />
+                Edit Content
+              </Button>
               <Button onClick={() => navigate('/admin/tickets')} variant="outline" size="sm">
                 <Ticket size={16} className="mr-2" />
                 Tickets
