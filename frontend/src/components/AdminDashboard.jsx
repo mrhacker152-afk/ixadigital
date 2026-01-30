@@ -16,7 +16,9 @@ import {
   TrendingUp,
   Users,
   CheckCircle,
-  Clock
+  Clock,
+  Settings,
+  Ticket
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -24,7 +26,10 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState([]);
-  const [stats, setStats] = useState({ total: 0, new: 0, read: 0, contacted: 0 });
+  const [stats, setStats] = useState({ 
+    submissions: { total: 0, new: 0, read: 0, contacted: 0 },
+    tickets: { total: 0, open: 0, in_progress: 0, resolved: 0 }
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
 
@@ -48,7 +53,15 @@ const AdminDashboard = () => {
       ]);
 
       setSubmissions(submissionsRes.data.submissions);
-      setStats(statsRes.data.stats);
+      if (statsRes.data.stats.submissions) {
+        setStats(statsRes.data.stats);
+      } else {
+        // Backward compatibility
+        setStats({
+          submissions: statsRes.data.stats,
+          tickets: { total: 0, open: 0, in_progress: 0, resolved: 0 }
+        });
+      }
     } catch (error) {
       if (error.response?.status === 401) {
         localStorage.removeItem('adminToken');
@@ -138,6 +151,14 @@ const AdminDashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <Button onClick={() => navigate('/admin/tickets')} variant="outline" size="sm">
+                <Ticket size={16} className="mr-2" />
+                Tickets
+              </Button>
+              <Button onClick={() => navigate('/admin/settings')} variant="outline" size="sm">
+                <Settings size={16} className="mr-2" />
+                Settings
+              </Button>
               <Button onClick={fetchData} variant="outline" size="sm">
                 <RefreshCw size={16} className="mr-2" />
                 Refresh
@@ -158,8 +179,8 @@ const AdminDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Submissions</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-sm text-gray-600 mb-1">Total Inquiries</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.submissions.total}</p>
                 </div>
                 <Users className="text-red-600" size={32} />
               </div>
@@ -170,8 +191,8 @@ const AdminDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">New</p>
-                  <p className="text-3xl font-bold text-blue-600">{stats.new}</p>
+                  <p className="text-sm text-gray-600 mb-1">New Inquiries</p>
+                  <p className="text-3xl font-bold text-blue-600">{stats.submissions.new}</p>
                 </div>
                 <Clock className="text-blue-600" size={32} />
               </div>
@@ -182,10 +203,10 @@ const AdminDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Read</p>
-                  <p className="text-3xl font-bold text-yellow-600">{stats.read}</p>
+                  <p className="text-sm text-gray-600 mb-1">Support Tickets</p>
+                  <p className="text-3xl font-bold text-purple-600">{stats.tickets.total}</p>
                 </div>
-                <TrendingUp className="text-yellow-600" size={32} />
+                <Ticket className="text-purple-600" size={32} />
               </div>
             </CardContent>
           </Card>
@@ -194,10 +215,10 @@ const AdminDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Contacted</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.contacted}</p>
+                  <p className="text-sm text-gray-600 mb-1">Open Tickets</p>
+                  <p className="text-3xl font-bold text-orange-600">{stats.tickets.open}</p>
                 </div>
-                <CheckCircle className="text-green-600" size={32} />
+                <MessageSquare className="text-orange-600" size={32} />
               </div>
             </CardContent>
           </Card>
@@ -219,7 +240,7 @@ const AdminDashboard = () => {
             size="sm"
             className={filterStatus === 'new' ? 'bg-red-600 hover:bg-red-700' : ''}
           >
-            New ({stats.new})
+            New ({stats.submissions.new})
           </Button>
           <Button
             onClick={() => setFilterStatus('read')}
@@ -227,7 +248,7 @@ const AdminDashboard = () => {
             size="sm"
             className={filterStatus === 'read' ? 'bg-red-600 hover:bg-red-700' : ''}
           >
-            Read ({stats.read})
+            Read ({stats.submissions.read})
           </Button>
           <Button
             onClick={() => setFilterStatus('contacted')}
@@ -235,7 +256,7 @@ const AdminDashboard = () => {
             size="sm"
             className={filterStatus === 'contacted' ? 'bg-red-600 hover:bg-red-700' : ''}
           >
-            Contacted ({stats.contacted})
+            Contacted ({stats.submissions.contacted})
           </Button>
         </div>
 
