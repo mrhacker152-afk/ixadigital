@@ -6,7 +6,9 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
-import { submitContactForm } from '../data/mock';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const ContactModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -30,8 +32,8 @@ const ContactModal = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
 
     try {
-      await submitContactForm(formData);
-      toast.success('Thank you! We\'ll get back to you soon.');
+      const response = await axios.post(`${BACKEND_URL}/api/contact`, formData);
+      toast.success(response.data.message);
       setFormData({
         name: '',
         email: '',
@@ -43,7 +45,7 @@ const ContactModal = ({ isOpen, onClose }) => {
         onClose();
       }, 1500);
     } catch (error) {
-      toast.error('Something went wrong. Please try again.');
+      toast.error(error.response?.data?.detail || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
