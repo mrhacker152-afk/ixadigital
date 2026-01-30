@@ -154,6 +154,15 @@ const ContactModal = ({ isOpen, onClose }) => {
             />
           </div>
 
+          {recaptchaConfig.enabled && recaptchaConfig.site_key && (
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                sitekey={recaptchaConfig.site_key}
+                onChange={(token) => setRecaptchaToken(token || '')}
+              />
+            </div>
+          )}
+
           <Button
             type="submit"
             disabled={isSubmitting}
