@@ -187,6 +187,151 @@ class IXADigitalAPITester:
         )
         return success
 
+    def test_support_ticket_creation(self):
+        """Test support ticket creation (public endpoint)"""
+        ticket_data = {
+            "customer_name": "Test Customer",
+            "customer_email": "customer@example.com",
+            "customer_phone": "+919876543210",
+            "category": "Technical Support",
+            "subject": "Test Support Ticket",
+            "description": "This is a test support ticket for API testing."
+        }
+        
+        success, response = self.run_test(
+            "Support Ticket Creation",
+            "POST",
+            "api/support-ticket",
+            200,
+            data=ticket_data
+        )
+        
+        if success and response.get('success'):
+            print(f"   Ticket Number: {response.get('ticket_number')}")
+            print(f"   Ticket ID: {response.get('ticket_id')}")
+            return response.get('ticket_id')
+        return None
+
+    def test_admin_tickets(self):
+        """Test admin tickets endpoint"""
+        success, response = self.run_test(
+            "Admin Tickets",
+            "GET",
+            "api/admin/tickets",
+            200
+        )
+        
+        if success and response.get('success'):
+            tickets = response.get('tickets', [])
+            print(f"   Found {len(tickets)} tickets")
+            return tickets
+        return []
+
+    def test_admin_settings_get(self):
+        """Test getting admin settings"""
+        success, response = self.run_test(
+            "Get Admin Settings",
+            "GET",
+            "api/admin/settings",
+            200
+        )
+        
+        if success and response.get('success'):
+            settings = response.get('settings', {})
+            print(f"   Settings loaded: email_settings={bool(settings.get('email_settings'))}, seo_settings={bool(settings.get('seo_settings'))}")
+        
+        return success
+
+    def test_admin_settings_update(self):
+        """Test updating admin settings"""
+        settings_data = {
+            "email_settings": {
+                "smtp_host": "smtp.gmail.com",
+                "smtp_port": 587,
+                "smtp_user": "test@example.com",
+                "smtp_password": "testpassword",
+                "from_email": "test@example.com",
+                "from_name": "IXA Digital Test",
+                "notification_recipients": ["admin@ixadigital.com"],
+                "enabled": False  # Keep disabled for testing
+            },
+            "seo_settings": {
+                "site_title": "IXA Digital - Test Title",
+                "site_description": "Test description for SEO",
+                "keywords": "test, seo, digital marketing",
+                "google_analytics_id": "G-TEST123456",
+                "google_site_verification": "test-verification-code",
+                "og_image": "https://example.com/test-image.jpg",
+                "twitter_handle": "@ixadigital_test"
+            }
+        }
+        
+        success, response = self.run_test(
+            "Update Admin Settings",
+            "PUT",
+            "api/admin/settings",
+            200,
+            data=settings_data
+        )
+        return success
+
+    def test_ticket_reply(self, ticket_id):
+        """Test replying to a ticket"""
+        if not ticket_id:
+            print("   Skipping ticket reply test - no ticket ID")
+            return False
+            
+        reply_data = {
+            "message": "This is a test reply from admin."
+        }
+        
+        success, response = self.run_test(
+            "Ticket Reply",
+            "POST",
+            f"api/admin/tickets/{ticket_id}/reply",
+            200,
+            data=reply_data
+        )
+        return success
+
+    def test_ticket_status_update(self, ticket_id):
+        """Test updating ticket status"""
+        if not ticket_id:
+            print("   Skipping ticket status update test - no ticket ID")
+            return False
+            
+        success, response = self.run_test(
+            "Update Ticket Status",
+            "PATCH",
+            f"api/admin/tickets/{ticket_id}/status?status=in_progress&priority=high",
+            200
+        )
+        return success
+
+    def test_seo_config_endpoint(self):
+        """Test SEO config endpoint (public)"""
+        success, response = self.run_test(
+            "SEO Config Endpoint",
+            "GET",
+            "api/seo-config",
+            200
+        )
+        
+        if success:
+            print(f"   SEO Config: {response}")
+        
+        return success
+
+    def test_sitemap_endpoint(self):
+        """Test sitemap endpoint"""
+        success, response = self.run_test(
+            "Sitemap XML",
+            "GET",
+            "api/sitemap.xml",
+            200
+        )
+        return success
+
     def test_unauthorized_access(self):
         """Test unauthorized access to protected endpoints"""
         # Temporarily remove token
