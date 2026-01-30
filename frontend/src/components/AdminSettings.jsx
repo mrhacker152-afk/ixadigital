@@ -528,6 +528,76 @@ const AdminSettings = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="security">
+          <Card>
+            <CardHeader>
+              <CardTitle>Google reCAPTCHA v2</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={recaptchaSettings.enabled}
+                  onChange={(e) => setRecaptchaSettings({ ...recaptchaSettings, enabled: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <Label>Enable reCAPTCHA Protection</Label>
+              </div>
+
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-900 mb-2 font-semibold">How to get reCAPTCHA keys:</p>
+                <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
+                  <li>Go to <a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener noreferrer" className="underline">Google reCAPTCHA Admin</a></li>
+                  <li>Click "+" to register a new site</li>
+                  <li>Choose reCAPTCHA v2 → "I'm not a robot" Checkbox</li>
+                  <li>Add your domain</li>
+                  <li>Copy Site Key and Secret Key</li>
+                </ol>
+              </div>
+
+              <div>
+                <Label>Site Key (Public)</Label>
+                <Input
+                  value={recaptchaSettings.site_key}
+                  onChange={(e) => setRecaptchaSettings({ ...recaptchaSettings, site_key: e.target.value })}
+                  placeholder="6Lc..."
+                  className="mt-1"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This key will be visible in your forms
+                </p>
+              </div>
+
+              <div>
+                <Label>Secret Key (Private)</Label>
+                <Input
+                  type="password"
+                  value={recaptchaSettings.secret_key}
+                  onChange={(e) => setRecaptchaSettings({ ...recaptchaSettings, secret_key: e.target.value })}
+                  placeholder="6Lc..."
+                  className="mt-1"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Keep this secret! Used for server-side verification
+                </p>
+              </div>
+
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-900 font-semibold mb-2">Protected Forms:</p>
+                <ul className="text-xs text-yellow-800 space-y-1 list-disc list-inside">
+                  <li>Request Consultation Form</li>
+                  <li>Create Support Ticket Form</li>
+                </ul>
+              </div>
+
+              <Button onClick={saveSettings} disabled={isSaving} className="w-full bg-red-600 hover:bg-red-700">
+                <Save size={16} className="mr-2" />
+                {isSaving ? 'Saving...' : 'Save Security Settings'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       <div className="mt-4 text-center">
