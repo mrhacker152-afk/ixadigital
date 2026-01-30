@@ -6,7 +6,7 @@ const { databases } = require('../database');
 // Configure multer for logo uploads
 const logoStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = './uploads/logos';
+    const dir = path.join(__dirname, '../uploads/logos');
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -34,7 +34,7 @@ const logoUpload = multer({
 // Configure multer for favicon uploads
 const faviconStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = './uploads/favicons';
+    const dir = path.join(__dirname, '../uploads/favicons');
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
