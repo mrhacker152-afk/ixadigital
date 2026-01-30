@@ -1,6 +1,7 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Response
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Response, File, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -9,6 +10,8 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
+import shutil
+import uuid as uuid_lib
 
 from models import (
     ContactSubmission,
@@ -38,6 +41,10 @@ from email_service import EmailService
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+# Create uploads directory
+UPLOAD_DIR = ROOT_DIR / 'static' / 'uploads'
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -45,6 +52,9 @@ db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
 app = FastAPI()
+
+# Mount static files directory
+app.mount("/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="static")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -220,6 +230,25 @@ async def customer_reply_to_ticket(
     except Exception as e:
         logger.error(f"Error adding customer reply: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to add reply")
+
+@api_router.get("/branding")
+async def get_branding():
+    """Get branding configuration (logo, favicon) - public"""
+    try:
+        settings = await db.settings.find_one()
+        if settings and settings.get('branding'):
+            return {"success": True, "branding": settings['branding']}
+        return {
+            "success": True,
+            "branding": {
+                "logo_url": "https://customer-assets.emergentagent.com/job_a08c0b50-0e68-4792-b6a6-4a15ac002d5c/artifacts/3mcpq5px_Logo.jpeg",
+                "favicon_url": "",
+                "company_name": "IXA Digital"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error fetching branding: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch branding")
 
 @api_router.get("/page-content/{page}")
 async def get_page_content(page: str):
@@ -641,6 +670,87 @@ async def test_email_settings(current_admin: dict = Depends(get_current_admin)):
     except Exception as e:
         logger.error(f"Error testing email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# File Upload Routes (Admin)
+@api_router.post("/admin/upload-logo")
+async def upload_logo(
+    file: UploadFile = File(...),
+    current_admin: dict = Depends(get_current_admin)
+):
+    """Upload logo image (Admin only)"""
+    try:
+        # Validate file type
+        allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml']
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, WebP, and SVG allowed.")
+        
+        # Generate unique filename
+        file_extension = file.filename.split('.')[-1]
+        unique_filename = f"logo_{uuid_lib.uuid4()}.{file_extension}"
+        file_path = UPLOAD_DIR / unique_filename
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Generate URL
+        file_url = f"/static/uploads/{unique_filename}"
+        
+        # Update settings
+        settings = await db.settings.find_one()
+        if settings:
+            branding = settings.get('branding', {})
+            branding['logo_url'] = file_url
+            await db.settings.update_one(
+                {},
+                {"$set": {"branding": branding, "updated_at": datetime.utcnow()}}
+            )
+        
+        logger.info(f"Logo uploaded: {unique_filename}")
+        return {"success": True, "url": file_url, "message": "Logo uploaded successfully"}
+    except Exception as e:
+        logger.error(f"Error uploading logo: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to upload logo")
+
+@api_router.post("/admin/upload-favicon")
+async def upload_favicon(
+    file: UploadFile = File(...),
+    current_admin: dict = Depends(get_current_admin)
+):
+    """Upload favicon image (Admin only)"""
+    try:
+        # Validate file type
+        allowed_types = ['image/x-icon', 'image/vnd.microsoft.icon', 'image/png', 'image/jpeg', 'image/jpg']
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Invalid file type. Only ICO, PNG, and JPG allowed for favicon.")
+        
+        # Generate unique filename
+        file_extension = file.filename.split('.')[-1]
+        unique_filename = f"favicon_{uuid_lib.uuid4()}.{file_extension}"
+        file_path = UPLOAD_DIR / unique_filename
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Generate URL
+        file_url = f"/static/uploads/{unique_filename}"
+        
+        # Update settings
+        settings = await db.settings.find_one()
+        if settings:
+            branding = settings.get('branding', {})
+            branding['favicon_url'] = file_url
+            await db.settings.update_one(
+                {},
+                {"$set": {"branding": branding, "updated_at": datetime.utcnow()}}
+            )
+        
+        logger.info(f"Favicon uploaded: {unique_filename}")
+        return {"success": True, "url": file_url, "message": "Favicon uploaded successfully"}
+    except Exception as e:
+        logger.error(f"Error uploading favicon: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to upload favicon")
 
 # Content Management Routes (Admin)
 @api_router.get("/admin/content/{page}")

@@ -99,12 +99,18 @@ class SystemSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email_settings: EmailSettings = EmailSettings()
     seo_settings: SEOSettings = SEOSettings()
+    branding: dict = {
+        "logo_url": "https://customer-assets.emergentagent.com/job_a08c0b50-0e68-4792-b6a6-4a15ac002d5c/artifacts/3mcpq5px_Logo.jpeg",
+        "favicon_url": "",
+        "company_name": "IXA Digital"
+    }
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     updated_by: str = ""
 
 class SettingsUpdate(BaseModel):
     email_settings: Optional[EmailSettings] = None
     seo_settings: Optional[SEOSettings] = None
+    branding: Optional[dict] = None
 
 # Content Management Models
 class HeroContent(BaseModel):
