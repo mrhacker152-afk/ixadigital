@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-01-30T07:08:17.204860",
-  "total_tests": 16,
-  "passed_tests": 15,
-  "success_rate": 93.75,
+  "timestamp": "2026-01-30T07:17:54.846307",
+  "total_tests": 22,
+  "passed_tests": 21,
+  "success_rate": 95.45454545454545,
   "test_results": [
     {
       "test_name": "Root API Endpoint",
@@ -24,13 +24,13 @@
       "actual_status": 200,
       "success": true,
       "response_data": {
-        "site_title": "IXA Digital - Results-Driven SEO, Marketing & Development",
-        "site_description": "Leading digital agency offering SEO, digital marketing, web development, and app development services. Data-driven strategies that deliver measurable results.",
-        "keywords": "SEO services, digital marketing, web development, app development, digital agency",
-        "google_analytics_id": "",
-        "google_site_verification": "",
-        "og_image": "",
-        "twitter_handle": ""
+        "site_title": "IXA Digital - Test Title",
+        "site_description": "Test description for SEO",
+        "keywords": "test, seo, digital marketing",
+        "google_analytics_id": "G-TEST123456",
+        "google_site_verification": "test-verification-code",
+        "og_image": "https://example.com/test-image.jpg",
+        "twitter_handle": "@ixadigital_test"
       },
       "error": null
     },
@@ -54,7 +54,7 @@
       "response_data": {
         "success": true,
         "message": "Thank you for your inquiry! We'll get back to you within 24 hours.",
-        "id": "d030c7c5-2847-49c9-9703-a568d90720c6"
+        "id": "09081533-d5ff-427f-9082-1ad08ffae825"
       },
       "error": null
     },
@@ -68,8 +68,8 @@
       "response_data": {
         "success": true,
         "message": "Support ticket created successfully",
-        "ticket_number": "TKT-000003",
-        "ticket_id": "d05f255c-c2fb-4eb7-98e2-1bb25c0ed87d"
+        "ticket_number": "TKT-000006",
+        "ticket_id": "5408ea6d-bdea-4673-bab5-0af89c1b5034"
       },
       "error": null
     },
@@ -83,7 +83,7 @@
       "response_data": {
         "success": true,
         "message": "Login successful",
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2OTg0MzI5Nn0.GwvHxKoR0RJVkaY5viFAP4HMF98_KhAPYGO7WuI9tNM",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2OTg0Mzg3NH0.5i_2IKP99WYSnYI2MDWaanalkckMBji79tzGPMR-TWA",
         "admin": {
           "username": "admin",
           "id": "697c52bb63b4988556714922"
@@ -108,9 +108,9 @@
             "contacted": 0
           },
           "tickets": {
-            "total": 3,
-            "open": 1,
-            "in_progress": 2,
+            "total": 6,
+            "open": 3,
+            "in_progress": 3,
             "resolved": 0
           }
         }
@@ -129,14 +129,14 @@
         "count": 3,
         "submissions": [
           {
-            "_id": "697c58e0d176fa2e968d5666",
-            "id": "d030c7c5-2847-49c9-9703-a568d90720c6",
+            "_id": "697c5b21dfa7e1e5e3b0635d",
+            "id": "09081533-d5ff-427f-9082-1ad08ffae825",
             "name": "Test User",
             "email": "test@example.com",
             "phone": "+919876543210",
             "service": "web-development",
             "message": "This is a test message for contact form submission.",
-            "created_at": "2026-01-30T07:08:16.532000",
+            "created_at": "2026-01-30T07:17:53.924000",
             "status": "new"
           },
           {
@@ -174,8 +174,63 @@
       "success": true,
       "response_data": {
         "success": true,
-        "count": 3,
+        "count": 6,
         "tickets": [
+          {
+            "_id": "697c5b21dfa7e1e5e3b0635e",
+            "id": "5408ea6d-bdea-4673-bab5-0af89c1b5034",
+            "ticket_number": "TKT-000006",
+            "customer_name": "Test Customer",
+            "customer_email": "customer@example.com",
+            "customer_phone": "+919876543210",
+            "category": "Technical Support",
+            "subject": "Test Support Ticket",
+            "description": "This is a test support ticket for API testing.",
+            "status": "open",
+            "priority": "medium",
+            "created_at": "2026-01-30T07:17:53.964000",
+            "updated_at": "2026-01-30T07:17:53.964000",
+            "replies": []
+          },
+          {
+            "_id": "697c5aacdfa7e1e5e3b0635c",
+            "id": "da618649-d4e7-4e37-b711-65d9f4bf6181",
+            "ticket_number": "TKT-000005",
+            "customer_name": "Portal Test User",
+            "customer_email": "portal@test.com",
+            "customer_phone": "+1234567890",
+            "category": "General Inquiry",
+            "subject": "Testing customer portal",
+            "description": "This is a test ticket for the customer portal",
+            "status": "open",
+            "priority": "medium",
+            "created_at": "2026-01-30T07:15:56.960000",
+            "updated_at": "2026-01-30T07:16:23.274000",
+            "replies": [
+              {
+                "author": "Portal Test User",
+                "message": "Thank you for your help!",
+                "created_at": "2026-01-30T07:16:23.274000",
+                "is_admin": false
+              }
+            ]
+          },
+          {
+            "_id": "697c597bd176fa2e968d5668",
+            "id": "57dc3779-e744-4369-ab80-487b02b08631",
+            "ticket_number": "TKT-000004",
+            "customer_name": "Test User",
+            "customer_email": "test@example.com",
+            "customer_phone": "+1234567890",
+            "category": "Technical Support",
+            "subject": "Test ticket",
+            "description": "Testing support ticket system",
+            "status": "open",
+            "priority": "medium",
+            "created_at": "2026-01-30T07:10:51.008000",
+            "updated_at": "2026-01-30T07:10:51.008000",
+            "replies": []
+          },
           {
             "_id": "697c58e0d176fa2e968d5667",
             "id": "d05f255c-c2fb-4eb7-98e2-1bb25c0ed87d",
@@ -186,11 +241,18 @@
             "category": "Technical Support",
             "subject": "Test Support Ticket",
             "description": "This is a test support ticket for API testing.",
-            "status": "open",
-            "priority": "medium",
+            "status": "in_progress",
+            "priority": "high",
             "created_at": "2026-01-30T07:08:16.571000",
-            "updated_at": "2026-01-30T07:08:16.571000",
-            "replies": []
+            "updated_at": "2026-01-30T07:08:17.085000",
+            "replies": [
+              {
+                "author": "admin",
+                "message": "This is a test reply from admin.",
+                "created_at": "2026-01-30T07:08:17.051000",
+                "is_admin": true
+              }
+            ]
           },
           {
             "_id": "697c58d1d176fa2e968d5665",
@@ -257,24 +319,26 @@
           "email_settings": {
             "smtp_host": "smtp.gmail.com",
             "smtp_port": 587,
-            "smtp_user": "",
-            "smtp_password": "",
-            "from_email": "",
-            "from_name": "IXA Digital",
-            "notification_recipients": [],
+            "smtp_user": "test@example.com",
+            "smtp_password": "testpassword",
+            "from_email": "test@example.com",
+            "from_name": "IXA Digital Test",
+            "notification_recipients": [
+              "admin@ixadigital.com"
+            ],
             "enabled": false
           },
           "seo_settings": {
-            "site_title": "IXA Digital - Results-Driven SEO, Marketing & Development",
-            "site_description": "Leading digital agency offering SEO, digital marketing, web development, and app development services. Data-driven strategies that deliver measurable results.",
-            "keywords": "SEO services, digital marketing, web development, app development, digital agency",
-            "google_analytics_id": "",
-            "google_site_verification": "",
-            "og_image": "",
-            "twitter_handle": ""
+            "site_title": "IXA Digital - Test Title",
+            "site_description": "Test description for SEO",
+            "keywords": "test, seo, digital marketing",
+            "google_analytics_id": "G-TEST123456",
+            "google_site_verification": "test-verification-code",
+            "og_image": "https://example.com/test-image.jpg",
+            "twitter_handle": "@ixadigital_test"
           },
-          "updated_at": "2026-01-30T07:03:35.704000",
-          "updated_by": ""
+          "updated_at": "2026-01-30T07:08:17.014000",
+          "updated_by": "admin"
         }
       },
       "error": null
@@ -295,7 +359,7 @@
     {
       "test_name": "Ticket Reply",
       "method": "POST",
-      "endpoint": "api/admin/tickets/d05f255c-c2fb-4eb7-98e2-1bb25c0ed87d/reply",
+      "endpoint": "api/admin/tickets/5408ea6d-bdea-4673-bab5-0af89c1b5034/reply",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
@@ -308,7 +372,7 @@
     {
       "test_name": "Update Ticket Status",
       "method": "PATCH",
-      "endpoint": "api/admin/tickets/d05f255c-c2fb-4eb7-98e2-1bb25c0ed87d/status?status=in_progress&priority=high",
+      "endpoint": "api/admin/tickets/5408ea6d-bdea-4673-bab5-0af89c1b5034/status?status=in_progress&priority=high",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
@@ -319,9 +383,107 @@
       "error": null
     },
     {
+      "test_name": "Track Ticket - Valid Credentials",
+      "method": "POST",
+      "endpoint": "api/track-ticket?ticket_number=TKT-000006&customer_email=customer@example.com",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "ticket": {
+          "_id": "697c5b21dfa7e1e5e3b0635e",
+          "id": "5408ea6d-bdea-4673-bab5-0af89c1b5034",
+          "ticket_number": "TKT-000006",
+          "customer_name": "Test Customer",
+          "customer_email": "customer@example.com",
+          "customer_phone": "+919876543210",
+          "category": "Technical Support",
+          "subject": "Test Support Ticket",
+          "description": "This is a test support ticket for API testing.",
+          "status": "in_progress",
+          "priority": "high",
+          "created_at": "2026-01-30T07:17:53.964000",
+          "updated_at": "2026-01-30T07:17:54.515000",
+          "replies": [
+            {
+              "author": "admin",
+              "message": "This is a test reply from admin.",
+              "created_at": "2026-01-30T07:17:54.468000",
+              "is_admin": true
+            }
+          ]
+        }
+      },
+      "error": null
+    },
+    {
+      "test_name": "Customer Reply - Valid",
+      "method": "POST",
+      "endpoint": "api/ticket/5408ea6d-bdea-4673-bab5-0af89c1b5034/customer-reply?reply_message=This is a test customer reply from API testing.&customer_email=customer@example.com",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Reply added successfully"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Close Ticket for Reply Test",
+      "method": "PATCH",
+      "endpoint": "api/admin/tickets/5408ea6d-bdea-4673-bab5-0af89c1b5034/status?status=closed",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Ticket updated successfully"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Customer Reply - Closed Ticket",
+      "method": "POST",
+      "endpoint": "api/ticket/5408ea6d-bdea-4673-bab5-0af89c1b5034/customer-reply?reply_message=This reply should be blocked on closed ticket&customer_email=customer@example.com",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Reply added successfully"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Track Ticket - Invalid Credentials",
+      "method": "POST",
+      "endpoint": "api/track-ticket?ticket_number=TKT-999999&customer_email=invalid@example.com",
+      "expected_status": 404,
+      "actual_status": 404,
+      "success": true,
+      "response_data": {
+        "detail": "Ticket not found or email doesn't match"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Customer Reply - Invalid Credentials",
+      "method": "POST",
+      "endpoint": "api/ticket/invalid-id/customer-reply?reply_message=This should fail&customer_email=invalid@example.com",
+      "expected_status": 404,
+      "actual_status": 404,
+      "success": true,
+      "response_data": {
+        "detail": "Ticket not found or email doesn't match"
+      },
+      "error": null
+    },
+    {
       "test_name": "Update Submission Status",
       "method": "PATCH",
-      "endpoint": "api/admin/submissions/d030c7c5-2847-49c9-9703-a568d90720c6/status?status=read",
+      "endpoint": "api/admin/submissions/09081533-d5ff-427f-9082-1ad08ffae825/status?status=read",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
@@ -334,7 +496,7 @@
     {
       "test_name": "Delete Submission",
       "method": "DELETE",
-      "endpoint": "api/admin/submissions/d030c7c5-2847-49c9-9703-a568d90720c6",
+      "endpoint": "api/admin/submissions/09081533-d5ff-427f-9082-1ad08ffae825",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
