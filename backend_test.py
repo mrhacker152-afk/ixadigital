@@ -66,7 +66,7 @@ class IXADigitalAPITester:
                     result["error"] = response.text
 
             self.test_results.append(result)
-            return success, response.json() if response.headers.get('content-type', '').startswith('application/json') else {}
+            return success, response.json() if success and response.headers.get('content-type', '').startswith('application/json') else {}
 
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
