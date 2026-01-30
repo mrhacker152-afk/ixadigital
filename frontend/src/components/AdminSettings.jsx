@@ -177,11 +177,15 @@ const AdminSettings = () => {
       );
 
       setBranding({ ...branding, logo_url: response.data.url });
-      toast.success('Logo uploaded successfully!');
+      toast.success(`Logo uploaded successfully! File: ${response.data.filename}`);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to upload logo');
+      const errorMsg = error.response?.data?.detail || 'Failed to upload logo';
+      toast.error(errorMsg);
+      console.error('Logo upload error:', error);
     } finally {
       setIsUploadingLogo(false);
+      // Clear file input
+      e.target.value = '';
     }
   };
 
@@ -212,12 +216,24 @@ const AdminSettings = () => {
         }
       );
 
+      // Construct the full URL
+      const faviconUrl = response.data.url.startsWith('http') 
+        ? response.data.url 
+        : `${BACKEND_URL}${response.data.url}`;
+      
       setBranding({ ...branding, favicon_url: response.data.url });
-      toast.success('Favicon uploaded successfully!');
+      toast.success(`Favicon uploaded successfully! File: ${response.data.filename}`);
+      
+      // Force reload branding to update favicon in header
+      window.location.reload();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to upload favicon');
+      const errorMsg = error.response?.data?.detail || 'Failed to upload favicon';
+      toast.error(errorMsg);
+      console.error('Favicon upload error:', error);
     } finally {
       setIsUploadingFavicon(false);
+      // Clear file input
+      e.target.value = '';
     }
   };
 
@@ -302,46 +318,62 @@ const AdminSettings = () => {
               <div>
                 <Label>Favicon</Label>
                 <p className="text-xs text-gray-500 mb-2">
-                  Supported formats: ICO, PNG, JPG, GIF, SVG | Recommended: 16x16, 32x32, or 64x64 pixels | Max 1MB
+                  Supported formats: ICO, PNG, JPG, GIF, SVG | Recommended: 32x32 pixels | Max 1MB
                 </p>
                 {branding.favicon_url && (
                   <div className="mb-3 p-4 bg-gray-50 rounded-lg border">
-                    <p className="text-xs text-gray-600 mb-2">Current Favicon:</p>
+                    <p className="text-xs text-gray-600 mb-2">Current Favicon Preview:</p>
                     <div className="flex items-center gap-3">
-                      <img
-                        src={branding.favicon_url.startsWith('http') ? branding.favicon_url : `${BACKEND_URL}${branding.favicon_url}`}
-                        alt="Current Favicon"
-                        className="h-8 w-8 object-contain border border-gray-200 bg-white p-1"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextElementSibling.style.display = 'block';
-                        }}
-                      />
-                      <div style={{display: 'none'}} className="text-xs text-red-600">
-                        Failed to load favicon
+                      <div className="w-16 h-16 flex items-center justify-center bg-white border-2 border-gray-200 rounded p-2">
+                        <img
+                          src={branding.favicon_url.startsWith('http') ? branding.favicon_url : `${BACKEND_URL}${branding.favicon_url}`}
+                          alt="Favicon Preview"
+                          className="max-w-full max-h-full object-contain"
+                          onError={(e) => {
+                            e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="%23ccc"/><text x="16" y="20" text-anchor="middle" fill="%23666" font-size="12">?</text></svg>';
+                          }}
+                        />
                       </div>
-                      <span className="text-xs text-gray-600">
-                        {branding.favicon_url.split('/').pop()}
-                      </span>
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-700 font-medium mb-1">
+                          {branding.favicon_url.split('/').pop()}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          URL: {branding.favicon_url.startsWith('http') ? branding.favicon_url : `${BACKEND_URL}${branding.favicon_url}`}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <Input
-                    type="file"
-                    accept=".ico,.png,.jpg,.jpeg,.gif,.svg,image/x-icon,image/png,image/jpeg,image/gif,image/svg+xml"
-                    onChange={handleFaviconUpload}
-                    disabled={isUploadingFavicon}
-                    className="flex-1"
-                  />
-                  <Button disabled={isUploadingFavicon} variant="outline">
-                    <Upload size={16} className="mr-2" />
-                    {isUploadingFavicon ? 'Uploading...' : 'Upload'}
-                  </Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      type="file"
+                      id="favicon-upload"
+                      accept=".ico,.png,.jpg,.jpeg,.gif,.svg,image/x-icon,image/png,image/jpeg,image/gif,image/svg+xml"
+                      onChange={handleFaviconUpload}
+                      disabled={isUploadingFavicon}
+                      className="flex-1"
+                    />
+                    <Button disabled={isUploadingFavicon} variant="outline">
+                      <Upload size={16} className="mr-2" />
+                      {isUploadingFavicon ? 'Uploading...' : 'Upload'}
+                    </Button>
+                  </div>
+                  <div className="flex items-start gap-2 text-xs text-gray-600 bg-blue-50 p-3 rounded">
+                    <span>💡</span>
+                    <div>
+                      <strong>Need a favicon?</strong> Generate one at{' '}
+                      <a href="https://favicon.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                        favicon.io
+                      </a>
+                      {' '}or{' '}
+                      <a href="https://realfavicongenerator.net" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                        realfavicongenerator.net
+                      </a>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  💡 Tip: Use <a href="https://www.favicon-generator.org/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">favicon-generator.org</a> to create multi-size favicons
-                </p>
               </div>
 
               <Button onClick={saveSettings} disabled={isSaving} className="w-full bg-red-600 hover:bg-red-700">
