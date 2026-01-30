@@ -805,11 +805,29 @@ async def upload_logo(
     try:
         # Validate file type
         allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml']
-        if file.content_type not in allowed_types:
-            raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, WebP, and SVG allowed.")
+        
+        content_type = file.content_type
+        if content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid file type: {content_type}. Supported: JPG, PNG, WebP, SVG"
+            )
+        
+        # Validate file size (max 5MB)
+        file_content = await file.read()
+        if len(file_content) > 5 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File size must be less than 5MB")
+        
+        # Reset file pointer
+        await file.seek(0)
+        
+        # Determine file extension
+        if content_type == 'image/svg+xml':
+            file_extension = 'svg'
+        else:
+            file_extension = file.filename.split('.')[-1].lower()
         
         # Generate unique filename
-        file_extension = file.filename.split('.')[-1]
         unique_filename = f"logo_{uuid_lib.uuid4()}.{file_extension}"
         file_path = UPLOAD_DIR / unique_filename
         
@@ -830,11 +848,21 @@ async def upload_logo(
                 {"$set": {"branding": branding, "updated_at": datetime.utcnow()}}
             )
         
+        # Clear cache
+        clear_cache()
+        
         logger.info(f"Logo uploaded: {unique_filename}")
-        return {"success": True, "url": file_url, "message": "Logo uploaded successfully"}
+        return {
+            "success": True, 
+            "url": file_url, 
+            "filename": unique_filename,
+            "message": "Logo uploaded successfully"
+        }
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error uploading logo: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to upload logo")
+        raise HTTPException(status_code=500, detail=f"Failed to upload logo: {str(e)}")
 
 @api_router.post("/admin/upload-favicon")
 async def upload_favicon(
@@ -843,13 +871,34 @@ async def upload_favicon(
 ):
     """Upload favicon image (Admin only)"""
     try:
-        # Validate file type
-        allowed_types = ['image/x-icon', 'image/vnd.microsoft.icon', 'image/png', 'image/jpeg', 'image/jpg']
-        if file.content_type not in allowed_types:
-            raise HTTPException(status_code=400, detail="Invalid file type. Only ICO, PNG, and JPG allowed for favicon.")
+        # Validate file type - accept more formats
+        allowed_types = [
+            'image/x-icon', 
+            'image/vnd.microsoft.icon', 
+            'image/png', 
+            'image/jpeg', 
+            'image/jpg',
+            'image/gif',
+            'image/svg+xml'
+        ]
+        
+        # Check content type
+        content_type = file.content_type
+        if content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid file type: {content_type}. Supported: ICO, PNG, JPG, GIF, SVG"
+            )
+        
+        # Determine file extension
+        if content_type in ['image/x-icon', 'image/vnd.microsoft.icon']:
+            file_extension = 'ico'
+        elif content_type == 'image/svg+xml':
+            file_extension = 'svg'
+        else:
+            file_extension = file.filename.split('.')[-1].lower()
         
         # Generate unique filename
-        file_extension = file.filename.split('.')[-1]
         unique_filename = f"favicon_{uuid_lib.uuid4()}.{file_extension}"
         file_path = UPLOAD_DIR / unique_filename
         
@@ -857,7 +906,7 @@ async def upload_favicon(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # Generate URL
+        # Generate URL (relative to match backend serving)
         file_url = f"/static/uploads/{unique_filename}"
         
         # Update settings
@@ -870,11 +919,21 @@ async def upload_favicon(
                 {"$set": {"branding": branding, "updated_at": datetime.utcnow()}}
             )
         
+        # Clear cache
+        clear_cache()
+        
         logger.info(f"Favicon uploaded: {unique_filename}")
-        return {"success": True, "url": file_url, "message": "Favicon uploaded successfully"}
+        return {
+            "success": True, 
+            "url": file_url, 
+            "filename": unique_filename,
+            "message": "Favicon uploaded successfully"
+        }
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error uploading favicon: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to upload favicon")
+        raise HTTPException(status_code=500, detail=f"Failed to upload favicon: {str(e)}")
 
 # Content Management Routes (Admin)
 @api_router.get("/admin/content/{page}")

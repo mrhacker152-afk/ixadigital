@@ -302,22 +302,34 @@ const AdminSettings = () => {
               <div>
                 <Label>Favicon</Label>
                 <p className="text-xs text-gray-500 mb-2">
-                  Recommended: ICO or PNG format (16x16 or 32x32), max 1MB
+                  Supported formats: ICO, PNG, JPG, GIF, SVG | Recommended: 16x16, 32x32, or 64x64 pixels | Max 1MB
                 </p>
                 {branding.favicon_url && (
                   <div className="mb-3 p-4 bg-gray-50 rounded-lg border">
                     <p className="text-xs text-gray-600 mb-2">Current Favicon:</p>
-                    <img
-                      src={branding.favicon_url.startsWith('http') ? branding.favicon_url : `${BACKEND_URL}${branding.favicon_url}`}
-                      alt="Current Favicon"
-                      className="h-8 w-8 object-contain"
-                    />
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={branding.favicon_url.startsWith('http') ? branding.favicon_url : `${BACKEND_URL}${branding.favicon_url}`}
+                        alt="Current Favicon"
+                        className="h-8 w-8 object-contain border border-gray-200 bg-white p-1"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'block';
+                        }}
+                      />
+                      <div style={{display: 'none'}} className="text-xs text-red-600">
+                        Failed to load favicon
+                      </div>
+                      <span className="text-xs text-gray-600">
+                        {branding.favicon_url.split('/').pop()}
+                      </span>
+                    </div>
                   </div>
                 )}
                 <div className="flex gap-2">
                   <Input
                     type="file"
-                    accept="image/x-icon,image/vnd.microsoft.icon,image/png,image/jpeg"
+                    accept=".ico,.png,.jpg,.jpeg,.gif,.svg,image/x-icon,image/png,image/jpeg,image/gif,image/svg+xml"
                     onChange={handleFaviconUpload}
                     disabled={isUploadingFavicon}
                     className="flex-1"
@@ -327,6 +339,9 @@ const AdminSettings = () => {
                     {isUploadingFavicon ? 'Uploading...' : 'Upload'}
                   </Button>
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  💡 Tip: Use <a href="https://www.favicon-generator.org/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">favicon-generator.org</a> to create multi-size favicons
+                </p>
               </div>
 
               <Button onClick={saveSettings} disabled={isSaving} className="w-full bg-red-600 hover:bg-red-700">
