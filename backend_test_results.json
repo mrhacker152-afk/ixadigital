@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-01-30T06:44:43.721363",
-  "total_tests": 8,
-  "passed_tests": 7,
+  "timestamp": "2026-01-30T07:07:45.959532",
+  "total_tests": 16,
+  "passed_tests": 14,
   "success_rate": 87.5,
   "test_results": [
     {
@@ -17,6 +17,34 @@
       "error": null
     },
     {
+      "test_name": "SEO Config Endpoint",
+      "method": "GET",
+      "endpoint": "api/seo-config",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "site_title": "IXA Digital - Results-Driven SEO, Marketing & Development",
+        "site_description": "Leading digital agency offering SEO, digital marketing, web development, and app development services. Data-driven strategies that deliver measurable results.",
+        "keywords": "SEO services, digital marketing, web development, app development, digital agency",
+        "google_analytics_id": "",
+        "google_site_verification": "",
+        "og_image": "",
+        "twitter_handle": ""
+      },
+      "error": null
+    },
+    {
+      "test_name": "Sitemap XML",
+      "method": "GET",
+      "endpoint": "api/sitemap.xml",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n    <url>\n        <loc>https://your-domain.com/</loc>\n        <lastmod>2026-01-30</lastmod>\n        <changefreq>weekly</changefreq>\n        <priority>1.0</priority>\n    </url>\n    <url>\n        <loc>https://your-domain.com/admin/login</loc>\n        <lastmod>2026-01-30</lastmod>\n        <changefreq>monthly</changefreq>\n        <priority>0.3</priority>\n    </url>\n</urlset>",
+      "error": null
+    },
+    {
       "test_name": "Contact Form Submission",
       "method": "POST",
       "endpoint": "api/contact",
@@ -26,7 +54,22 @@
       "response_data": {
         "success": true,
         "message": "Thank you for your inquiry! We'll get back to you within 24 hours.",
-        "id": "4afabffb-bd86-453f-9d11-6c6e79105914"
+        "id": "f1908dfa-1820-4251-8bd8-ad3f0a0c8b89"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Support Ticket Creation",
+      "method": "POST",
+      "endpoint": "api/support-ticket",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Support ticket created successfully",
+        "ticket_number": "TKT-000001",
+        "ticket_id": "b5b7f7db-f8b6-469f-8b20-0659847451e4"
       },
       "error": null
     },
@@ -40,7 +83,7 @@
       "response_data": {
         "success": true,
         "message": "Login successful",
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2OTg0MTg4M30.xfkRbBd9dgCSkkyp7PJKdPc8tjoAvFDTOKxRU649Q-Q",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2OTg0MzI2NX0.RENKckcvOaFPGT0grzrvtEKVqEJRsMMKwCAMa458Ows",
         "admin": {
           "username": "admin",
           "id": "697c52bb63b4988556714922"
@@ -58,10 +101,18 @@
       "response_data": {
         "success": true,
         "stats": {
-          "total": 1,
-          "new": 1,
-          "read": 0,
-          "contacted": 0
+          "submissions": {
+            "total": 3,
+            "new": 3,
+            "read": 0,
+            "contacted": 0
+          },
+          "tickets": {
+            "total": 1,
+            "open": 1,
+            "in_progress": 0,
+            "resolved": 0
+          }
         }
       },
       "error": null
@@ -75,17 +126,39 @@
       "success": true,
       "response_data": {
         "success": true,
-        "count": 1,
+        "count": 3,
         "submissions": [
           {
-            "_id": "697c535b03f5d70f871b6c4c",
-            "id": "4afabffb-bd86-453f-9d11-6c6e79105914",
+            "_id": "697c58c1d176fa2e968d5662",
+            "id": "f1908dfa-1820-4251-8bd8-ad3f0a0c8b89",
             "name": "Test User",
             "email": "test@example.com",
             "phone": "+919876543210",
             "service": "web-development",
             "message": "This is a test message for contact form submission.",
-            "created_at": "2026-01-30T06:44:43.211000",
+            "created_at": "2026-01-30T07:07:45.230000",
+            "status": "new"
+          },
+          {
+            "_id": "697c54c703f5d70f871b6c4e",
+            "id": "61196679-7f7e-41d9-86bf-53b5899e6043",
+            "name": "John Smith",
+            "email": "john@example.com",
+            "phone": "+1234567890",
+            "service": "web-development",
+            "message": "I need a new website for my business",
+            "created_at": "2026-01-30T06:50:47.655000",
+            "status": "new"
+          },
+          {
+            "_id": "697c537f03f5d70f871b6c4d",
+            "id": "3c8a8c75-8717-4b1d-958e-7ad44cbc5637",
+            "name": "Test User Frontend",
+            "email": "frontend@test.com",
+            "phone": "+919876543210",
+            "service": "web-development",
+            "message": "This is a test message from frontend automation testing.",
+            "created_at": "2026-01-30T06:45:19.710000",
             "status": "new"
           }
         ]
@@ -93,9 +166,113 @@
       "error": null
     },
     {
+      "test_name": "Admin Tickets",
+      "method": "GET",
+      "endpoint": "api/admin/tickets",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "count": 1,
+        "tickets": [
+          {
+            "_id": "697c58c1d176fa2e968d5663",
+            "id": "b5b7f7db-f8b6-469f-8b20-0659847451e4",
+            "ticket_number": "TKT-000001",
+            "customer_name": "Test Customer",
+            "customer_email": "customer@example.com",
+            "customer_phone": "+919876543210",
+            "category": "Technical Support",
+            "subject": "Test Support Ticket",
+            "description": "This is a test support ticket for API testing.",
+            "status": "open",
+            "priority": "medium",
+            "created_at": "2026-01-30T07:07:45.272000",
+            "updated_at": "2026-01-30T07:07:45.272000",
+            "replies": []
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "test_name": "Get Admin Settings",
+      "method": "GET",
+      "endpoint": "api/admin/settings",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "settings": {
+          "_id": "697c57c7b51ff1a675b832b4",
+          "id": "5f6a2010-c0a3-499c-a0d2-a73ef0d41d2f",
+          "email_settings": {
+            "smtp_host": "smtp.gmail.com",
+            "smtp_port": 587,
+            "smtp_user": "",
+            "smtp_password": "",
+            "from_email": "",
+            "from_name": "IXA Digital",
+            "notification_recipients": [],
+            "enabled": false
+          },
+          "seo_settings": {
+            "site_title": "IXA Digital - Results-Driven SEO, Marketing & Development",
+            "site_description": "Leading digital agency offering SEO, digital marketing, web development, and app development services. Data-driven strategies that deliver measurable results.",
+            "keywords": "SEO services, digital marketing, web development, app development, digital agency",
+            "google_analytics_id": "",
+            "google_site_verification": "",
+            "og_image": "",
+            "twitter_handle": ""
+          },
+          "updated_at": "2026-01-30T07:03:35.704000",
+          "updated_by": ""
+        }
+      },
+      "error": null
+    },
+    {
+      "test_name": "Update Admin Settings",
+      "method": "PUT",
+      "endpoint": "api/admin/settings",
+      "expected_status": 200,
+      "actual_status": null,
+      "success": false,
+      "response_data": null,
+      "error": "cannot access local variable 'response' where it is not associated with a value"
+    },
+    {
+      "test_name": "Ticket Reply",
+      "method": "POST",
+      "endpoint": "api/admin/tickets/b5b7f7db-f8b6-469f-8b20-0659847451e4/reply",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Reply added successfully"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Update Ticket Status",
+      "method": "PATCH",
+      "endpoint": "api/admin/tickets/b5b7f7db-f8b6-469f-8b20-0659847451e4/status?status=in_progress&priority=high",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Ticket updated successfully"
+      },
+      "error": null
+    },
+    {
       "test_name": "Update Submission Status",
       "method": "PATCH",
-      "endpoint": "api/admin/submissions/4afabffb-bd86-453f-9d11-6c6e79105914/status?status=read",
+      "endpoint": "api/admin/submissions/f1908dfa-1820-4251-8bd8-ad3f0a0c8b89/status?status=read",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
@@ -108,7 +285,7 @@
     {
       "test_name": "Delete Submission",
       "method": "DELETE",
-      "endpoint": "api/admin/submissions/4afabffb-bd86-453f-9d11-6c6e79105914",
+      "endpoint": "api/admin/submissions/f1908dfa-1820-4251-8bd8-ad3f0a0c8b89",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
