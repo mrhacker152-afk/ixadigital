@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, X } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { contactInfo } from '../data/mock';
 
 const WhatsAppButton = () => {
@@ -7,10 +7,8 @@ const WhatsAppButton = () => {
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 2000);
-    return () => clearTimeout(timer);
+    // Show button immediately for testing, with animation
+    setIsVisible(true);
   }, []);
 
   const handleWhatsAppClick = () => {
@@ -18,15 +16,13 @@ const WhatsAppButton = () => {
     window.open(`https://wa.me/${contactInfo.whatsapp.replace(/\+/g, '')}?text=${message}`, '_blank');
   };
 
-  if (!isVisible) return null;
-
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 right-6 z-50" style={{ display: isVisible ? 'block' : 'none' }}>
       <button
         onClick={handleWhatsAppClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="group relative bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 animate-bounce"
+        className="group relative bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110"
         aria-label="Chat on WhatsApp"
       >
         <MessageCircle size={28} />
