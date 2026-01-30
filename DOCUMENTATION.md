@@ -1,315 +1,212 @@
-# IXA Digital - CloudPanel Deployment Documentation
+# IXA Digital - Deployment Documentation
 
 ## Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [CloudPanel Initial Setup](#cloudpanel-initial-setup)
-3. [Domain Configuration](#domain-configuration)
-4. [Automated Installation](#automated-installation)
-5. [Manual Installation (Alternative)](#manual-installation-alternative)
-6. [Environment Configuration](#environment-configuration)
-7. [Database Setup](#database-setup)
-8. [SSL Certificate](#ssl-certificate)
-9. [Admin Panel Access](#admin-panel-access)
-10. [Post-Deployment Configuration](#post-deployment-configuration)
-11. [Troubleshooting](#troubleshooting)
-12. [Maintenance & Updates](#maintenance--updates)
+1. [Overview](#overview)
+2. [Technology Stack](#technology-stack)
+3. [Quick Start](#quick-start)
+4. [Manual Installation](#manual-installation)
+5. [Environment Configuration](#environment-configuration)
+6. [Port Configuration](#port-configuration)
+7. [Database Structure](#database-structure)
+8. [Admin Panel Access](#admin-panel-access)
+9. [API Reference](#api-reference)
+10. [CloudPanel Deployment](#cloudpanel-deployment)
+11. [PM2 Process Management](#pm2-process-management)
+12. [Troubleshooting](#troubleshooting)
+13. [Backup & Restore](#backup--restore)
+14. [Security Checklist](#security-checklist)
 
 ---
 
-## Prerequisites
+## Overview
 
-### Server Requirements
-- **OS**: Ubuntu 20.04 LTS or 22.04 LTS
-- **RAM**: Minimum 2GB (4GB recommended)
-- **CPU**: 2 cores (recommended)
-- **Disk**: 20GB SSD minimum
-- **CloudPanel**: Version 2.x installed
-
-### Required Services
-- Node.js 18.x or higher
-- Python 3.11+
-- MongoDB 6.0+
-- Nginx (included with CloudPanel)
-- Supervisor (for process management)
-
-### Domain Setup
-- Domain: `ixadigital.com`
-- DNS A Record pointing to your server IP
-- Wait 5-10 minutes for DNS propagation
+IXA Digital is a full-stack digital agency website featuring:
+- Public landing page with contact form
+- Support ticket system with customer portal
+- Admin panel with CMS, settings, and ticket management
+- Email notifications (SMTP)
+- SEO and branding controls
 
 ---
 
-## CloudPanel Initial Setup
+## Technology Stack
 
-### 1. Install CloudPanel (if not already installed)
+| Component | Technology |
+|-----------|------------|
+| **Backend** | Node.js 18+ with Express.js |
+| **Database** | LowDB (JSON file-based) |
+| **Frontend** | React 18 + Tailwind CSS |
+| **Process Manager** | PM2 |
+| **Web Server** | Express static serving (or Nginx reverse proxy) |
+
+### No External Dependencies
+- ❌ No MongoDB required
+- ❌ No Python required
+- ❌ No Redis required
+- ✅ Single Node.js process serves everything
+
+---
+
+## Quick Start
+
+### One-Command Setup
 
 ```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install CloudPanel
-curl -sS https://installer.cloudpanel.io/ce/v2/install.sh -o install.sh
-sudo bash install.sh
-
-# Access CloudPanel at: https://YOUR_SERVER_IP:8443
-```
-
-### 2. Create Database User
-
-```bash
-# Login to CloudPanel admin panel
-# Go to: Databases → Add Database
-# Create:
-Database Name: ixadigital_db
-Database User: ixadigital_user
-Password: [Generate strong password]
-```
-
----
-
-## Domain Configuration
-
-### 1. Add Site in CloudPanel
-
-1. **Login to CloudPanel**: `https://YOUR_SERVER_IP:8443`
-2. **Add Site**:
-   - Domain Name: `ixadigital.com`
-   - Site Type: `Node.js`
-   - Node.js Version: `18.x`
-3. **Enable SSL**: Let's Encrypt (after DNS propagates)
-
-### 2. DNS Configuration
-
-**Add these DNS records at your domain registrar:**
-
-```
-Type    Name    Value               TTL
-A       @       YOUR_SERVER_IP      3600
-A       www     YOUR_SERVER_IP      3600
-CNAME   admin   ixadigital.com      3600
-```
-
----
-
-## Automated Installation
-
-### Quick Setup Script
-
-**Download and run the automated setup script:**
-
-```bash
-# Download setup script
-wget https://raw.githubusercontent.com/YOUR_REPO/setup.sh -O setup.sh
+cd backend-node
 chmod +x setup.sh
-
-# Run setup
-sudo ./setup.sh
+./setup.sh
 ```
 
-**Or copy the setup.sh script from this repository and run:**
+This script will:
+1. Install backend dependencies
+2. Install frontend dependencies
+3. Build the React frontend
+4. Start the server with PM2
+5. Display access URLs
 
-```bash
-chmod +x setup.sh
-sudo ./setup.sh
-```
-
-The script will:
-- ✅ Install all dependencies
-- ✅ Setup MongoDB
-- ✅ Configure Python virtual environment
-- ✅ Install Node.js packages
-- ✅ Build frontend
-- ✅ Configure Nginx
-- ✅ Setup Supervisor
-- ✅ Create systemd services
-
-**Estimated time**: 10-15 minutes
+**Estimated time:** 3-5 minutes
 
 ---
 
-## Manual Installation (Alternative)
+## Manual Installation
 
-### Step 1: Prepare Directory Structure
-
-```bash
-# Navigate to site directory
-cd /home/ixadigital/htdocs/ixadigital.com
-
-# Clone or upload your code
-git clone YOUR_REPOSITORY_URL .
-
-# Or upload via SFTP/SCP
-```
-
-### Step 2: Backend Setup
+### Step 1: Install Backend
 
 ```bash
-# Install Python dependencies
-cd backend
-python3.11 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Create .env file
-cat > .env << EOF
-MONGO_URL=mongodb://localhost:27017/
-DB_NAME=ixadigital_db
-JWT_SECRET_KEY=$(openssl rand -hex 32)
-FRONTEND_URL=https://ixadigital.com
-EOF
-```
-
-### Step 3: Frontend Setup
-
-```bash
-# Install Node.js dependencies
-cd ../frontend
-npm install -g yarn
+cd backend-node
 yarn install
+# or: npm install
+```
 
+### Step 2: Configure Environment
+
+```bash
 # Create .env file
-cat > .env << EOF
-REACT_APP_BACKEND_URL=https://ixadigital.com
-EOF
+cp .env.example .env
 
-# Build production
+# Edit configuration
+nano .env
+```
+
+### Step 3: Install & Build Frontend
+
+```bash
+cd ../frontend
+yarn install
 yarn build
 ```
 
-### Step 4: MongoDB Setup
+### Step 4: Start Server
 
 ```bash
-# Install MongoDB
-wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-sudo apt update
-sudo apt install -y mongodb-org
+cd ../backend-node
 
-# Start MongoDB
-sudo systemctl start mongod
-sudo systemctl enable mongod
+# Development (with auto-reload)
+yarn dev
 
-# Create database user
-mongo
-> use ixadigital_db
-> db.createUser({
-    user: "ixadigital_user",
-    pwd: "YOUR_PASSWORD",
-    roles: [{role: "readWrite", db: "ixadigital_db"}]
-  })
-> exit
-```
+# Production
+yarn start
 
-### Step 5: Nginx Configuration
-
-```bash
-# Create Nginx config
-sudo nano /etc/nginx/sites-available/ixadigital.com
-
-# Add configuration (see nginx.conf in repository)
-# Link configuration
-sudo ln -s /etc/nginx/sites-available/ixadigital.com /etc/nginx/sites-enabled/
-
-# Test and reload
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-### Step 6: Supervisor Configuration
-
-```bash
-# Create supervisor config
-sudo nano /etc/supervisor/conf.d/ixadigital.conf
-
-# Add configuration (see supervisor.conf in repository)
-# Update supervisor
-sudo supervisorctl reread
-sudo supervisorctl update
-sudo supervisorctl start ixadigital:*
+# With PM2 (recommended for production)
+pm2 start ecosystem.config.js
 ```
 
 ---
 
 ## Environment Configuration
 
-### Backend Environment Variables
-
-**File**: `/home/ixadigital/htdocs/ixadigital.com/backend/.env`
+### Backend Environment (`/backend-node/.env`)
 
 ```env
-# Database
-MONGO_URL=mongodb://ixadigital_user:PASSWORD@localhost:27017/ixadigital_db
-DB_NAME=ixadigital_db
+# Server
+PORT=3030
+NODE_ENV=production
 
-# Security
-JWT_SECRET_KEY=your-super-secret-key-here
+# Security (CHANGE IN PRODUCTION!)
+JWT_SECRET=your-secure-random-string-here
 
 # URLs
-FRONTEND_URL=https://ixadigital.com
-
-# Optional
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
+FRONTEND_URL=https://yourdomain.com
 ```
 
-### Frontend Environment Variables
-
-**File**: `/home/ixadigital/htdocs/ixadigital.com/frontend/.env`
+### Frontend Environment (`/frontend/.env`)
 
 ```env
-REACT_APP_BACKEND_URL=https://ixadigital.com
-REACT_APP_SITE_NAME=IXA Digital
+REACT_APP_BACKEND_URL=https://yourdomain.com
+```
+
+### Environment Variable Reference
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PORT` | No | 3030 | Server port |
+| `NODE_ENV` | No | development | Environment mode |
+| `JWT_SECRET` | Yes | (insecure default) | JWT signing key |
+| `FRONTEND_URL` | No | - | Public URL for CORS/sitemap |
+
+---
+
+## Port Configuration
+
+### Default Ports
+
+| Service | Port | Description |
+|---------|------|-------------|
+| **Production Server** | 3030 | Node.js Express (serves API + frontend) |
+| **Development Frontend** | 3000 | React dev server (hot reload) |
+| **Development API** | 8001 | Backend when running separately |
+
+### Single-Port Architecture
+
+In production, everything runs on **one port**:
+- `/api/*` → Express API routes
+- `/*` → React static files from `/frontend/build/`
+
+```
+https://yourdomain.com/          → React SPA
+https://yourdomain.com/api/      → Express API
+https://yourdomain.com/admin/    → React Admin (SPA route)
+```
+
+### Changing the Port
+
+```bash
+# Option 1: Environment variable
+PORT=8080 node server.js
+
+# Option 2: Edit .env file
+PORT=8080
+
+# Option 3: PM2 ecosystem config
+# Edit ecosystem.config.js → env.PORT
 ```
 
 ---
 
-## Database Setup
+## Database Structure
 
-### MongoDB Connection String
+### Location
 
-```bash
-# Update backend .env with proper MongoDB URL
-MONGO_URL=mongodb://ixadigital_user:YOUR_PASSWORD@localhost:27017/ixadigital_db?authSource=ixadigital_db
-```
+All data stored in: `/backend-node/database/`
 
-### Initialize Database
+### JSON Files
 
-```bash
-# Backend will auto-initialize on first run
-# Creates:
-# - admin user (username: admin, password: IXADigital@2026)
-# - default settings
-# - required collections with indexes
-```
+| File | Purpose |
+|------|---------|
+| `admins.json` | Admin user credentials |
+| `submissions.json` | Contact form entries |
+| `tickets.json` | Support tickets + counter |
+| `settings.json` | Email, SEO, branding, reCAPTCHA |
+| `content.json` | CMS content (hero, about, footer) |
 
----
+### File Uploads
 
-## SSL Certificate
+Uploaded files stored in: `/backend-node/uploads/`
 
-### Using Let's Encrypt (CloudPanel)
-
-1. **In CloudPanel**:
-   - Go to your site
-   - Click on "SSL/TLS"
-   - Click "Let's Encrypt"
-   - Enter email address
-   - Click "Install"
-
-### Manual SSL Setup
-
-```bash
-# Install Certbot
-sudo apt install certbot python3-certbot-nginx
-
-# Obtain certificate
-sudo certbot --nginx -d ixadigital.com -d www.ixadigital.com
-
-# Auto-renewal (already configured)
-sudo certbot renew --dry-run
-```
+| Directory | Purpose | Formats |
+|-----------|---------|---------|
+| `uploads/logos/` | Website logos | PNG, JPG, WebP, SVG (max 5MB) |
+| `uploads/favicons/` | Site favicons | ICO, PNG, JPG, GIF, SVG (max 1MB) |
 
 ---
 
@@ -317,395 +214,441 @@ sudo certbot renew --dry-run
 
 ### Default Credentials
 
-**URL**: `https://ixadigital.com/admin/login`
+| Field | Value |
+|-------|-------|
+| **URL** | `http://localhost:3030/admin/login` |
+| **Email** | `admin@ixadigital.com` |
+| **Password** | `admin123` |
 
-```
-Username: admin
-Password: IXADigital@2026
-```
+⚠️ **IMPORTANT:** Change credentials before production deployment!
 
-**⚠️ IMPORTANT**: Change password immediately after first login!
+### Changing Admin Password
 
-### Change Admin Password
+Edit `/backend-node/database/admins.json`:
 
 ```bash
-# Connect to MongoDB
-mongo ixadigital_db
+# Generate new bcrypt hash
+node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('YOUR_NEW_PASSWORD', 10).then(h => console.log(h))"
 
-# Generate new password hash
-# Use Python to generate bcrypt hash:
-python3 -c "from passlib.context import CryptContext; pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto'); print(pwd_context.hash('YOUR_NEW_PASSWORD'))"
+# Update admins.json with the new hash
+```
 
-# Update in MongoDB
-db.admins.updateOne(
-  {username: "admin"},
-  {$set: {password_hash: "HASH_FROM_ABOVE"}}
-)
+Or delete the file and restart - a new admin will be created with default credentials.
+
+---
+
+## API Reference
+
+### Public Endpoints (No Auth)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/` | Health check |
+| GET | `/api/branding` | Logo, favicon, company name |
+| GET | `/api/seo-config` | SEO metadata |
+| GET | `/api/recaptcha-config` | reCAPTCHA site key |
+| GET | `/api/page-content/:page` | CMS content |
+| POST | `/api/contact` | Submit contact form |
+| POST | `/api/support-ticket` | Create support ticket |
+| POST | `/api/track-ticket?ticket_number=X&customer_email=Y` | Track ticket |
+| POST | `/api/ticket/:id/customer-reply?reply_message=X&customer_email=Y` | Customer reply |
+| GET | `/api/sitemap.xml` | XML sitemap |
+
+### Admin Endpoints (JWT Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/admin/login` | Get JWT token |
+| GET | `/api/admin/stats` | Dashboard statistics |
+| GET | `/api/admin/submissions` | List contact submissions |
+| PATCH | `/api/admin/submissions/:id/status?status=X` | Update status |
+| DELETE | `/api/admin/submissions/:id` | Delete submission |
+| GET | `/api/admin/tickets` | List all tickets |
+| GET | `/api/admin/tickets/:id` | Get ticket details |
+| POST | `/api/admin/tickets/:id/reply` | Admin reply |
+| PATCH | `/api/admin/tickets/:id/status?status=X&priority=Y` | Update ticket |
+| DELETE | `/api/admin/tickets/:id` | Delete ticket |
+| GET | `/api/admin/settings` | Get all settings |
+| PUT | `/api/admin/settings` | Update settings |
+| POST | `/api/admin/settings/test-email` | Test SMTP |
+| POST | `/api/admin/upload-logo` | Upload logo (multipart) |
+| POST | `/api/admin/upload-favicon` | Upload favicon (multipart) |
+| GET | `/api/admin/content/:page` | Get page content |
+| PUT | `/api/admin/content` | Update page content |
+
+### Authentication
+
+```bash
+# Get token
+TOKEN=$(curl -s -X POST http://localhost:3030/api/admin/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin@ixadigital.com","password":"admin123"}' \
+  | jq -r '.token')
+
+# Use token
+curl http://localhost:3030/api/admin/stats \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---
 
-## Post-Deployment Configuration
+## CloudPanel Deployment
 
-### 1. Configure Email Notifications
+### Step 1: Create Node.js Site
 
-1. Login to Admin Panel
-2. Go to **Settings** → **Email Settings**
-3. Configure Gmail SMTP:
-   - Host: `smtp.gmail.com`
-   - Port: `587`
-   - Username: Your Gmail
-   - Password: App Password (not regular password)
-   - Enable notifications
-4. Add recipient emails
-5. Test email
+1. Login to CloudPanel
+2. Add new site → Select "Node.js"
+3. Enter domain: `ixadigital.com`
+4. Node.js version: 18.x or higher
 
-### 2. Setup Google reCAPTCHA
+### Step 2: Upload Files
 
-1. Go to [Google reCAPTCHA Admin](https://www.google.com/recaptcha/admin)
-2. Register site:
-   - Type: reCAPTCHA v2 "I'm not a robot"
-   - Domains: `ixadigital.com`
-3. Copy Site Key & Secret Key
-4. In Admin Panel → **Settings** → **Security**:
-   - Enable reCAPTCHA
-   - Paste keys
-   - Save
+```bash
+# Via Git
+cd /home/cloudpanel/htdocs/ixadigital.com
+git clone YOUR_REPO .
 
-### 3. Configure SEO Settings
+# Or via SFTP/SCP
+scp -r ./backend-node ./frontend user@server:/home/cloudpanel/htdocs/ixadigital.com/
+```
 
-1. Admin Panel → **Settings** → **SEO & Analytics**
-2. Add Google Analytics ID
-3. Add Google Site Verification code
-4. Update meta tags
-5. Save settings
+### Step 3: Configure & Start
 
-### 4. Upload Logo & Favicon
+```bash
+cd /home/cloudpanel/htdocs/ixadigital.com/backend-node
 
-1. Admin Panel → **Settings** → **Branding**
-2. Upload company logo (PNG/SVG, max 5MB)
-3. Upload favicon (ICO/PNG, 16x16 or 32x32)
-4. Update company name
-5. Save
+# Install dependencies
+yarn install
 
-### 5. Customize Content
+# Build frontend
+cd ../frontend
+yarn install
+yarn build
 
-1. Admin Panel → **Edit Content**
-2. Modify:
-   - Hero section text
-   - About section
-   - CTA text
-   - Footer information
-3. Save changes
+# Start with PM2
+cd ../backend-node
+pm2 start ecosystem.config.js
+pm2 save
+```
+
+### Step 4: Configure CloudPanel
+
+Set these in CloudPanel Node.js settings:
+
+| Setting | Value |
+|---------|-------|
+| Entry Point | `backend-node/server.js` |
+| Port | 3030 |
+| Node.js Version | 18.x |
+
+### Step 5: SSL Certificate
+
+1. In CloudPanel → Your Site → SSL/TLS
+2. Click "Let's Encrypt"
+3. Enter email and install
+
+---
+
+## PM2 Process Management
+
+### Configuration File
+
+`/backend-node/ecosystem.config.js`:
+
+```javascript
+module.exports = {
+  apps: [{
+    name: 'ixadigital',
+    script: 'server.js',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3030
+    }
+  }]
+};
+```
+
+### Common Commands
+
+```bash
+# Start
+pm2 start ecosystem.config.js
+
+# Stop
+pm2 stop ixadigital
+
+# Restart
+pm2 restart ixadigital
+
+# View logs
+pm2 logs ixadigital
+
+# Monitor
+pm2 monit
+
+# Save process list (survives reboot)
+pm2 save
+
+# Auto-start on boot
+pm2 startup
+```
 
 ---
 
 ## Troubleshooting
 
-### Backend Not Starting
+### Server Won't Start
 
 ```bash
 # Check logs
-sudo tail -f /var/log/supervisor/ixadigital_backend.err.log
+pm2 logs ixadigital --lines 50
 
-# Common issues:
-# 1. MongoDB not running
-sudo systemctl status mongod
-sudo systemctl start mongod
+# Check if port is in use
+lsof -i :3030
 
-# 2. Wrong Python path
-which python3.11
+# Kill process on port
+kill -9 $(lsof -t -i:3030)
 
-# 3. Missing dependencies
-cd /home/ixadigital/htdocs/ixadigital.com/backend
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Restart backend
-sudo supervisorctl restart ixadigital:backend
+# Start manually for debugging
+cd backend-node
+node server.js
 ```
 
-### Frontend 502 Bad Gateway
+### Database Errors
 
 ```bash
-# Check if backend is running
-sudo supervisorctl status ixadigital:backend
+# Check database files exist
+ls -la backend-node/database/
 
-# Check backend URL in frontend .env
-cat /home/ixadigital/htdocs/ixadigital.com/frontend/.env
+# Verify JSON is valid
+cat backend-node/database/settings.json | jq .
+
+# Reset database (creates fresh defaults)
+rm -rf backend-node/database/*.json
+node server.js
+```
+
+### Frontend Not Loading
+
+```bash
+# Check if build exists
+ls -la frontend/build/
 
 # Rebuild frontend
-cd /home/ixadigital/htdocs/ixadigital.com/frontend
+cd frontend
 yarn build
 
-# Check Nginx logs
-sudo tail -f /var/log/nginx/error.log
+# Check for build errors
+yarn build 2>&1 | tail -50
 ```
 
-### MongoDB Connection Failed
+### API Returns 401 Unauthorized
 
 ```bash
-# Check MongoDB status
-sudo systemctl status mongod
-
-# Check connection string
-cat /home/ixadigital/htdocs/ixadigital.com/backend/.env
-
-# Test connection
-mongo "mongodb://ixadigital_user:PASSWORD@localhost:27017/ixadigital_db"
-
-# Reset MongoDB user
-mongo
-> use ixadigital_db
-> db.dropUser("ixadigital_user")
-> db.createUser({
-    user: "ixadigital_user",
-    pwd: "NEW_PASSWORD",
-    roles: [{role: "readWrite", db: "ixadigital_db"}]
-  })
-```
-
-### SSL Certificate Issues
-
-```bash
-# Renew certificate
-sudo certbot renew --force-renewal
-
-# Check certificate status
-sudo certbot certificates
-
-# Test SSL
-curl -I https://ixadigital.com
-```
-
-### Forms Not Submitting
-
-```bash
-# Check reCAPTCHA configuration
-# Admin Panel → Settings → Security
-
-# Check browser console for errors
-# Check backend logs
-sudo tail -f /var/log/supervisor/ixadigital_backend.err.log
-
-# Test API endpoint
-curl -X POST https://ixadigital.com/api/contact \
+# Token expired - get new token
+curl -X POST http://localhost:3030/api/admin/login \
   -H "Content-Type: application/json" \
-  -d '{"name":"Test","email":"test@example.com","phone":"123","message":"Test"}'
+  -d '{"username":"admin@ixadigital.com","password":"admin123"}'
+
+# Check JWT_SECRET matches between restarts
+cat backend-node/.env | grep JWT_SECRET
+```
+
+### File Upload Fails
+
+```bash
+# Check upload directories exist
+ls -la backend-node/uploads/
+
+# Create if missing
+mkdir -p backend-node/uploads/logos backend-node/uploads/favicons
+
+# Check permissions
+chmod 755 backend-node/uploads -R
 ```
 
 ---
 
-## Maintenance & Updates
+## Backup & Restore
 
-### Update Application Code
-
-```bash
-# Navigate to directory
-cd /home/ixadigital/htdocs/ixadigital.com
-
-# Pull latest changes
-git pull origin main
-
-# Update backend
-cd backend
-source venv/bin/activate
-pip install -r requirements.txt
-sudo supervisorctl restart ixadigital:backend
-
-# Update frontend
-cd ../frontend
-yarn install
-yarn build
-
-# Restart services
-sudo supervisorctl restart ixadigital:*
-```
-
-### Backup Database
+### Backup
 
 ```bash
 # Create backup directory
-mkdir -p /home/ixadigital/backups
+mkdir -p ~/backups
 
-# Backup MongoDB
-mongodump --db ixadigital_db --out /home/ixadigital/backups/backup_$(date +%Y%m%d_%H%M%S)
+# Backup database
+cp -r backend-node/database ~/backups/database_$(date +%Y%m%d)
 
-# Backup uploaded files
-tar -czf /home/ixadigital/backups/uploads_$(date +%Y%m%d_%H%M%S).tar.gz \
-  /home/ixadigital/htdocs/ixadigital.com/backend/static/uploads/
+# Backup uploads
+cp -r backend-node/uploads ~/backups/uploads_$(date +%Y%m%d)
 
-# Create automated backup cron
-crontab -e
-# Add: 0 2 * * * /path/to/backup_script.sh
+# Backup environment
+cp backend-node/.env ~/backups/env_$(date +%Y%m%d)
 ```
 
-### Restore Database
+### Restore
 
 ```bash
-# Restore from backup
-mongorestore --db ixadigital_db /home/ixadigital/backups/backup_TIMESTAMP/ixadigital_db/
+# Restore database
+cp -r ~/backups/database_YYYYMMDD/* backend-node/database/
+
+# Restore uploads
+cp -r ~/backups/uploads_YYYYMMDD/* backend-node/uploads/
+
+# Restart server
+pm2 restart ixadigital
 ```
 
-### Monitor Application
+### Automated Backup Script
 
 ```bash
-# Check service status
-sudo supervisorctl status
+#!/bin/bash
+# backup.sh - Run daily via cron
 
-# Monitor logs in real-time
-sudo tail -f /var/log/supervisor/ixadigital_*.log
+BACKUP_DIR="/home/backups/ixadigital"
+DATE=$(date +%Y%m%d_%H%M%S)
 
-# Check resource usage
-htop
+mkdir -p $BACKUP_DIR
 
-# Check disk space
-df -h
+tar -czf $BACKUP_DIR/backup_$DATE.tar.gz \
+  backend-node/database \
+  backend-node/uploads \
+  backend-node/.env
 
-# Check MongoDB status
-sudo systemctl status mongod
+# Keep last 7 days
+find $BACKUP_DIR -name "backup_*.tar.gz" -mtime +7 -delete
 ```
 
-### Update Dependencies
-
-```bash
-# Update backend dependencies
-cd /home/ixadigital/htdocs/ixadigital.com/backend
-source venv/bin/activate
-pip list --outdated
-pip install --upgrade PACKAGE_NAME
-
-# Update frontend dependencies
-cd ../frontend
-yarn outdated
-yarn upgrade PACKAGE_NAME
-
-# Rebuild and restart
-yarn build
-sudo supervisorctl restart ixadigital:*
-```
-
----
-
-## Performance Optimization
-
-### Enable Caching
-
-**Already implemented:**
-- ✅ GZip compression
-- ✅ HTTP caching headers
-- ✅ Static file caching
-- ✅ Database indexing
-- ✅ Code splitting
-
-### Additional Optimizations
-
-```bash
-# Enable Nginx caching
-sudo nano /etc/nginx/nginx.conf
-
-# Add in http block:
-proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m max_size=1g inactive=60m;
-
-# In server block:
-location /api/ {
-    proxy_cache my_cache;
-    proxy_cache_valid 200 5m;
-    proxy_cache_key "$scheme$request_method$host$request_uri";
-}
-```
+Add to crontab: `0 2 * * * /path/to/backup.sh`
 
 ---
 
 ## Security Checklist
 
-- ✅ Change default admin password
-- ✅ Enable HTTPS/SSL
-- ✅ Configure firewall (UFW)
-- ✅ Setup reCAPTCHA
-- ✅ Secure MongoDB with authentication
-- ✅ Use environment variables for secrets
-- ✅ Regular backups
-- ✅ Keep software updated
-- ✅ Monitor logs for suspicious activity
-- ✅ Implement rate limiting (if needed)
+### Before Production
 
----
+- [ ] Change default admin password
+- [ ] Set strong `JWT_SECRET` in `.env`
+- [ ] Enable HTTPS/SSL
+- [ ] Configure reCAPTCHA (Admin → Settings → Security)
+- [ ] Review CORS settings if needed
+- [ ] Set `NODE_ENV=production`
 
-## Support & Resources
+### Recommended
 
-### Documentation
-- Full API Docs: `/app/API_DOCUMENTATION.md`
-- Performance Guide: `/app/PERFORMANCE_OPTIMIZATIONS.md`
-- PRD: `/app/memory/PRD.md`
+- [ ] Set up automated backups
+- [ ] Enable firewall (only allow 80, 443, SSH)
+- [ ] Use PM2 for process management
+- [ ] Monitor server resources
+- [ ] Set up log rotation
 
-### Useful Commands
+### File Permissions
 
 ```bash
-# Restart all services
-sudo supervisorctl restart ixadigital:*
-
-# View all logs
-sudo supervisorctl tail -f ixadigital:backend
-sudo supervisorctl tail -f ixadigital:frontend
-
-# Check status
-sudo supervisorctl status
-
-# Reload Nginx
-sudo nginx -t && sudo systemctl reload nginx
-
-# MongoDB shell
-mongo ixadigital_db
-
-# Check ports
-sudo netstat -tulpn | grep -E ':(3000|8001|27017)'
+# Secure sensitive files
+chmod 600 backend-node/.env
+chmod 700 backend-node/database
+chmod 755 backend-node/uploads
 ```
-
-### Common URLs
-- **Homepage**: https://ixadigital.com
-- **Admin Login**: https://ixadigital.com/admin/login
-- **Track Ticket**: https://ixadigital.com/track-ticket
-- **API**: https://ixadigital.com/api/
 
 ---
 
-## Production Checklist
+## Directory Structure
 
-Before going live, ensure:
-
-- [ ] Domain DNS configured correctly
-- [ ] SSL certificate installed and working
-- [ ] Admin password changed from default
-- [ ] Email notifications configured and tested
-- [ ] Google reCAPTCHA enabled
-- [ ] Logo and favicon uploaded
-- [ ] Content customized
-- [ ] Database backups automated
-- [ ] Monitoring setup
-- [ ] All forms tested
-- [ ] Mobile responsiveness checked
-- [ ] SEO settings configured
-- [ ] Google Analytics added
-- [ ] Test email sending
-- [ ] Test support ticket creation
-- [ ] Test customer portal
-- [ ] Performance tested (Google PageSpeed)
+```
+/app/
+├── backend-node/           # Node.js backend
+│   ├── server.js           # Main Express server
+│   ├── database.js         # LowDB initialization
+│   ├── package.json        # Dependencies
+│   ├── ecosystem.config.js # PM2 configuration
+│   ├── setup.sh            # One-click setup script
+│   ├── .env                # Environment variables
+│   ├── routes/             # API route handlers
+│   │   ├── admin.js        # Admin endpoints
+│   │   ├── api.js          # Health check
+│   │   ├── public.js       # Public endpoints
+│   │   └── upload.js       # File upload handlers
+│   ├── database/           # LowDB JSON files
+│   │   ├── admins.json
+│   │   ├── content.json
+│   │   ├── settings.json
+│   │   ├── submissions.json
+│   │   └── tickets.json
+│   └── uploads/            # Uploaded files
+│       ├── logos/
+│       └── favicons/
+│
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── hooks/          # Custom hooks
+│   │   └── App.js          # Main app with routes
+│   ├── build/              # Production build (generated)
+│   ├── package.json
+│   └── .env
+│
+├── ai-guide.md             # AI-readable project blueprint
+├── DOCUMENTATION.md        # This file
+└── memory/
+    └── PRD.md              # Product requirements
+```
 
 ---
 
 ## Version Information
 
-- **Application Version**: 3.0
-- **Node.js**: 18.x
-- **Python**: 3.11
-- **MongoDB**: 6.0
-- **Documentation Last Updated**: January 30, 2026
+| Component | Version |
+|-----------|---------|
+| Application | 4.0 (Node.js Architecture) |
+| Node.js | 18.x+ |
+| Express | 4.18.x |
+| React | 18.x |
+| LowDB | 6.x |
+
+**Last Updated:** January 30, 2026
 
 ---
 
-**Deployment Status**: ✅ Ready for Production
+## Quick Reference
 
-For issues or questions, check the troubleshooting section or review application logs.
-EOF
-echo "✅ Documentation created successfully"
+### URLs (Default)
+
+| Page | URL |
+|------|-----|
+| Homepage | http://localhost:3030/ |
+| Admin Login | http://localhost:3030/admin/login |
+| Admin Dashboard | http://localhost:3030/admin/dashboard |
+| Track Ticket | http://localhost:3030/track-ticket |
+| API Health | http://localhost:3030/api/ |
+
+### Default Credentials
+
+| Field | Value |
+|-------|-------|
+| Email | admin@ixadigital.com |
+| Password | admin123 |
+
+### Key Commands
+
+```bash
+# Start server
+cd backend-node && node server.js
+
+# Start with PM2
+pm2 start ecosystem.config.js
+
+# View logs
+pm2 logs ixadigital
+
+# Restart
+pm2 restart ixadigital
+
+# Build frontend
+cd frontend && yarn build
+```
