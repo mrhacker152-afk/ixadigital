@@ -193,9 +193,20 @@ const SupportTicketModal = ({ isOpen, onClose }) => {
               We've received your request and will respond within 24 hours. 
               You'll receive updates via email.
             </p>
-            <Button onClick={handleClose} className="bg-red-600 hover:bg-red-700">
-              Close
-            </Button>
+            <div className="space-y-3">
+              <a
+                href="/track-ticket"
+                className="block w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              >
+                Track Your Ticket
+              </a>
+              <Button onClick={handleClose} variant="outline" className="w-full">
+                Close
+              </Button>
+            </div>
+            <p className="text-xs text-gray-500 mt-4">
+              Save your ticket number ({ticketNumber}) for future reference
+            </p>
           </div>
         )}
       </DialogContent>
