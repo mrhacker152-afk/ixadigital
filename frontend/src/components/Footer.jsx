@@ -1,8 +1,10 @@
 import React from 'react';
 import { Mail, Phone, Linkedin, Twitter, Facebook, Instagram, Ticket, Search } from 'lucide-react';
 import { contactInfo } from '../data/mock';
+import { useBranding } from '../hooks/useBranding';
 
 const Footer = ({ onCTAClick, onTicketClick }) => {
+  const { branding } = useBranding();
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
@@ -17,8 +19,8 @@ const Footer = ({ onCTAClick, onTicketClick }) => {
           {/* Company Info */}
           <div>
             <img
-              src="https://customer-assets.emergentagent.com/job_a08c0b50-0e68-4792-b6a6-4a15ac002d5c/artifacts/3mcpq5px_Logo.jpeg"
-              alt="IXA Digital"
+              src={branding.logo_url}
+              alt={branding.company_name}
               className="h-12 w-auto mb-4 bg-white p-2 rounded"
             />
             <p className="text-gray-400 mb-4 leading-relaxed">
@@ -137,7 +139,7 @@ const Footer = ({ onCTAClick, onTicketClick }) => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 pt-8">
           <div className="text-center text-gray-400 text-sm">
-            <p>&copy; {new Date().getFullYear()} IXA Digital. All rights reserved. Results First.</p>
+            <p>&copy; {new Date().getFullYear()} {branding.company_name}. All rights reserved. Results First.</p>
           </div>
         </div>
       </div>

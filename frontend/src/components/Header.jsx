@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
+import { useBranding } from '../hooks/useBranding';
 
 const Header = ({ onCTAClick }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { branding } = useBranding();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,8 +35,8 @@ const Header = ({ onCTAClick }) => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <img
-              src="https://customer-assets.emergentagent.com/job_a08c0b50-0e68-4792-b6a6-4a15ac002d5c/artifacts/3mcpq5px_Logo.jpeg"
-              alt="IXA Digital"
+              src={branding.logo_url}
+              alt={branding.company_name}
               className="h-12 w-auto"
             />
           </div>
