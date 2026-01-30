@@ -122,15 +122,16 @@ async function initAllDatabases() {
     // Create default admin if not exists
     const bcrypt = require('bcryptjs');
     if (databases.admins.data.users.length === 0) {
-      const hashedPassword = await bcrypt.hash('IXADigital@2026', 10);
+      const hashedPassword = await bcrypt.hash('admin123', 10);
       databases.admins.data.users.push({
         id: generateId(),
-        username: 'admin',
+        email: 'admin@ixadigital.com',
+        username: 'admin@ixadigital.com',
         password: hashedPassword,
         created_at: new Date().toISOString()
       });
       await databases.admins.write();
-      console.log('✓ Default admin user created (admin / IXADigital@2026)');
+      console.log('✓ Default admin user created (admin@ixadigital.com / admin123)');
     }
     
     return databases;
