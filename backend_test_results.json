@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-30T07:07:45.959532",
+  "timestamp": "2026-01-30T07:08:01.919162",
   "total_tests": 16,
   "passed_tests": 14,
   "success_rate": 87.5,
@@ -54,7 +54,7 @@
       "response_data": {
         "success": true,
         "message": "Thank you for your inquiry! We'll get back to you within 24 hours.",
-        "id": "f1908dfa-1820-4251-8bd8-ad3f0a0c8b89"
+        "id": "c24ef298-5380-4faa-9c40-aba7a8554f2c"
       },
       "error": null
     },
@@ -68,8 +68,8 @@
       "response_data": {
         "success": true,
         "message": "Support ticket created successfully",
-        "ticket_number": "TKT-000001",
-        "ticket_id": "b5b7f7db-f8b6-469f-8b20-0659847451e4"
+        "ticket_number": "TKT-000002",
+        "ticket_id": "50ef732e-7e9b-40bf-b398-88a737dbadd6"
       },
       "error": null
     },
@@ -83,7 +83,7 @@
       "response_data": {
         "success": true,
         "message": "Login successful",
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2OTg0MzI2NX0.RENKckcvOaFPGT0grzrvtEKVqEJRsMMKwCAMa458Ows",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2OTg0MzI4MX0._zaFBQDqDDBJt5H37zqcbHY7q4oIUOKmZrcWyvyuNUI",
         "admin": {
           "username": "admin",
           "id": "697c52bb63b4988556714922"
@@ -108,9 +108,9 @@
             "contacted": 0
           },
           "tickets": {
-            "total": 1,
+            "total": 2,
             "open": 1,
-            "in_progress": 0,
+            "in_progress": 1,
             "resolved": 0
           }
         }
@@ -129,14 +129,14 @@
         "count": 3,
         "submissions": [
           {
-            "_id": "697c58c1d176fa2e968d5662",
-            "id": "f1908dfa-1820-4251-8bd8-ad3f0a0c8b89",
+            "_id": "697c58d1d176fa2e968d5664",
+            "id": "c24ef298-5380-4faa-9c40-aba7a8554f2c",
             "name": "Test User",
             "email": "test@example.com",
             "phone": "+919876543210",
             "service": "web-development",
             "message": "This is a test message for contact form submission.",
-            "created_at": "2026-01-30T07:07:45.230000",
+            "created_at": "2026-01-30T07:08:01.198000",
             "status": "new"
           },
           {
@@ -174,8 +174,24 @@
       "success": true,
       "response_data": {
         "success": true,
-        "count": 1,
+        "count": 2,
         "tickets": [
+          {
+            "_id": "697c58d1d176fa2e968d5665",
+            "id": "50ef732e-7e9b-40bf-b398-88a737dbadd6",
+            "ticket_number": "TKT-000002",
+            "customer_name": "Test Customer",
+            "customer_email": "customer@example.com",
+            "customer_phone": "+919876543210",
+            "category": "Technical Support",
+            "subject": "Test Support Ticket",
+            "description": "This is a test support ticket for API testing.",
+            "status": "open",
+            "priority": "medium",
+            "created_at": "2026-01-30T07:08:01.235000",
+            "updated_at": "2026-01-30T07:08:01.235000",
+            "replies": []
+          },
           {
             "_id": "697c58c1d176fa2e968d5663",
             "id": "b5b7f7db-f8b6-469f-8b20-0659847451e4",
@@ -186,11 +202,18 @@
             "category": "Technical Support",
             "subject": "Test Support Ticket",
             "description": "This is a test support ticket for API testing.",
-            "status": "open",
-            "priority": "medium",
+            "status": "in_progress",
+            "priority": "high",
             "created_at": "2026-01-30T07:07:45.272000",
-            "updated_at": "2026-01-30T07:07:45.272000",
-            "replies": []
+            "updated_at": "2026-01-30T07:07:45.844000",
+            "replies": [
+              {
+                "author": "admin",
+                "message": "This is a test reply from admin.",
+                "created_at": "2026-01-30T07:07:45.808000",
+                "is_admin": true
+              }
+            ]
           }
         ]
       },
@@ -246,7 +269,7 @@
     {
       "test_name": "Ticket Reply",
       "method": "POST",
-      "endpoint": "api/admin/tickets/b5b7f7db-f8b6-469f-8b20-0659847451e4/reply",
+      "endpoint": "api/admin/tickets/50ef732e-7e9b-40bf-b398-88a737dbadd6/reply",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
@@ -259,7 +282,7 @@
     {
       "test_name": "Update Ticket Status",
       "method": "PATCH",
-      "endpoint": "api/admin/tickets/b5b7f7db-f8b6-469f-8b20-0659847451e4/status?status=in_progress&priority=high",
+      "endpoint": "api/admin/tickets/50ef732e-7e9b-40bf-b398-88a737dbadd6/status?status=in_progress&priority=high",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
@@ -272,7 +295,7 @@
     {
       "test_name": "Update Submission Status",
       "method": "PATCH",
-      "endpoint": "api/admin/submissions/f1908dfa-1820-4251-8bd8-ad3f0a0c8b89/status?status=read",
+      "endpoint": "api/admin/submissions/c24ef298-5380-4faa-9c40-aba7a8554f2c/status?status=read",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
@@ -285,7 +308,7 @@
     {
       "test_name": "Delete Submission",
       "method": "DELETE",
-      "endpoint": "api/admin/submissions/f1908dfa-1820-4251-8bd8-ad3f0a0c8b89",
+      "endpoint": "api/admin/submissions/c24ef298-5380-4faa-9c40-aba7a8554f2c",
       "expected_status": 200,
       "actual_status": 200,
       "success": true,
