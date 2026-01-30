@@ -116,6 +116,87 @@ async def get_seo_config():
         return settings['seo_settings']
     return SEOSettings().dict()
 
+@api_router.post("/track-ticket")
+async def track_ticket(ticket_number: str, customer_email: str):
+    """Track a support ticket (public with verification)"""
+    try:
+        ticket = await db.support_tickets.find_one({
+            "ticket_number": ticket_number,
+            "customer_email": customer_email
+        })
+        
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found or email doesn't match")
+        
+        ticket["_id"] = str(ticket["_id"])
+        return {
+            "success": True,
+            "ticket": ticket
+        }
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error tracking ticket: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to track ticket")
+
+@api_router.post("/ticket/{ticket_id}/customer-reply")
+async def customer_reply_to_ticket(
+    ticket_id: str,
+    reply_message: str,
+    customer_email: str
+):
+    """Customer reply to their own ticket (public with verification)"""
+    try:
+        ticket = await db.support_tickets.find_one({
+            "id": ticket_id,
+            "customer_email": customer_email
+        })
+        
+        if not ticket:
+            raise HTTPException(status_code=404, detail="Ticket not found or email doesn't match")
+        
+        reply = TicketReply(
+            author=ticket["customer_name"],
+            message=reply_message,
+            is_admin=False
+        )
+        
+        result = await db.support_tickets.update_one(
+            {"id": ticket_id},
+            {
+                "$push": {"replies": reply.dict()},
+                "$set": {"updated_at": datetime.utcnow()}
+            }
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to add reply")
+        
+        # Send email notification to admin
+        email_service = await get_email_service()
+        settings = await db.settings.find_one()
+        if settings and settings.get('email_settings', {}).get('enabled'):
+            recipients = settings['email_settings'].get('notification_recipients', [])
+            if recipients:
+                # Notify admin about customer reply
+                subject = f"Customer Reply: Ticket #{ticket['ticket_number']}"
+                html_body = f"""
+                <h2>Customer Reply on Ticket #{ticket['ticket_number']}</h2>
+                <p><strong>From:</strong> {ticket['customer_name']} ({customer_email})</p>
+                <p><strong>Subject:</strong> {ticket['subject']}</p>
+                <p><strong>Reply:</strong></p>
+                <p>{reply_message}</p>
+                <p><a href="/admin/tickets">View in Admin Panel</a></p>
+                """
+                email_service.send_email(recipients, subject, html_body)
+        
+        return {"success": True, "message": "Reply added successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error adding customer reply: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to add reply")
+
 @api_router.post("/contact", response_model=ContactSubmissionResponse)
 async def submit_contact_form(submission: ContactSubmissionCreate):
     """Submit a contact form"""

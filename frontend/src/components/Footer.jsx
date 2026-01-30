@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, Linkedin, Twitter, Facebook, Instagram, Ticket } from 'lucide-react';
+import { Mail, Phone, Linkedin, Twitter, Facebook, Instagram, Ticket, Search } from 'lucide-react';
 import { contactInfo } from '../data/mock';
 
 const Footer = ({ onCTAClick, onTicketClick }) => {
@@ -119,11 +119,18 @@ const Footer = ({ onCTAClick, onTicketClick }) => {
             </button>
             <button
               onClick={onTicketClick}
-              className="w-full bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
+              className="w-full bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center mb-2"
             >
               <Ticket size={18} className="mr-2" />
               Create Support Ticket
             </button>
+            <a
+              href="/track-ticket"
+              className="w-full bg-white border-2 border-gray-300 hover:border-red-600 text-gray-700 hover:text-red-600 px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center"
+            >
+              <Search size={18} className="mr-2" />
+              Track Existing Ticket
+            </a>
           </div>
         </div>
 
