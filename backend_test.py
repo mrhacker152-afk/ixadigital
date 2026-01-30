@@ -479,6 +479,40 @@ def main():
         tester.test_ticket_reply(ticket_id)
         tester.test_ticket_status_update(ticket_id)
     
+    # Test customer portal features
+    print("\n🎯 Testing Customer Portal Features...")
+    customer_email = "customer@example.com"
+    ticket_number = None
+    
+    # Get ticket number from created ticket for testing
+    if tickets and len(tickets) > 0:
+        # Find a ticket with the test customer email
+        test_ticket = None
+        for ticket in tickets:
+            if ticket.get('customer_email') == customer_email:
+                test_ticket = ticket
+                break
+        
+        if test_ticket:
+            ticket_number = test_ticket.get('ticket_number')
+            ticket_id_for_customer = test_ticket.get('id')
+            
+            print(f"   Using existing ticket: {ticket_number}")
+            
+            # Test valid ticket tracking
+            track_success, tracked_ticket = tester.test_track_ticket_valid(ticket_number, customer_email)
+            
+            # Test customer reply if tracking worked
+            if track_success and ticket_id_for_customer:
+                tester.test_customer_reply_valid(ticket_id_for_customer, customer_email)
+                
+                # Test reply on closed ticket
+                tester.test_customer_reply_closed_ticket(ticket_id_for_customer, customer_email)
+    
+    # Test invalid tracking scenarios
+    tester.test_track_ticket_invalid()
+    tester.test_customer_reply_invalid()
+    
     # Test status update and deletion if we have submissions
     if submissions and len(submissions) > 0:
         test_submission_id = submissions[0].get('id')
