@@ -7,6 +7,8 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
 import axios from 'axios';
+import ReCAPTCHA from 'react-google-recaptcha';
+import { useRecaptcha } from '../hooks/useRecaptcha';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -19,6 +21,8 @@ const ContactModal = ({ isOpen, onClose }) => {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState('');
+  const { config: recaptchaConfig } = useRecaptcha();
 
   const handleChange = (e) => {
     setFormData({
@@ -29,10 +33,22 @@ const ContactModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (recaptchaConfig.enabled && !recaptchaToken) {
+      toast.error('Please complete the reCAPTCHA verification');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/contact`, formData);
+      const params = new URLSearchParams();
+      if (recaptchaToken) {
+        params.append('recaptcha_token', recaptchaToken);
+      }
+      
+      const url = `${BACKEND_URL}/api/contact${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await axios.post(url, formData);
       toast.success(response.data.message);
       setFormData({
         name: '',
@@ -41,6 +57,7 @@ const ContactModal = ({ isOpen, onClose }) => {
         service: '',
         message: ''
       });
+      setRecaptchaToken('');
       setTimeout(() => {
         onClose();
       }, 1500);
