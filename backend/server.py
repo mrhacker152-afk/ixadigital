@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 import shutil
 import uuid as uuid_lib
 from functools import lru_cache
+import httpx
 
 from models import (
     ContactSubmission,
@@ -119,6 +120,37 @@ async def get_cached_seo():
         _seo_cache = SEOSettings().dict()
     _seo_cache_time = now
     return _seo_cache
+
+async def verify_recaptcha(token: str) -> bool:
+    """Verify Google reCAPTCHA token"""
+    try:
+        settings = await db.settings.find_one()
+        if not settings or not settings.get('recaptcha_settings'):
+            return True  # If not configured, allow submission
+        
+        recaptcha = settings['recaptcha_settings']
+        if not recaptcha.get('enabled'):
+            return True  # If disabled, allow submission
+        
+        secret_key = recaptcha.get('secret_key')
+        if not secret_key:
+            return True
+        
+        # Verify with Google
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                'https://www.google.com/recaptcha/api/siteverify',
+                data={
+                    'secret': secret_key,
+                    'response': token
+                },
+                timeout=5.0
+            )
+            result = response.json()
+            return result.get('success', False)
+    except Exception as e:
+        logger.error(f"reCAPTCHA verification error: {str(e)}")
+        return True  # On error, allow submission (fail open)
 
 def clear_cache():
     """Clear all caches"""
@@ -290,6 +322,25 @@ async def customer_reply_to_ticket(
         logger.error(f"Error adding customer reply: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to add reply")
 
+@api_router.get("/recaptcha-config")
+async def get_recaptcha_config(response: Response):
+    """Get reCAPTCHA site key (public) with caching"""
+    try:
+        response.headers["Cache-Control"] = "public, max-age=300"
+        
+        settings = await db.settings.find_one()
+        if settings and settings.get('recaptcha_settings'):
+            recaptcha = settings['recaptcha_settings']
+            return {
+                "success": True,
+                "enabled": recaptcha.get('enabled', False),
+                "site_key": recaptcha.get('site_key', '')
+            }
+        return {"success": True, "enabled": False, "site_key": ""}
+    except Exception as e:
+        logger.error(f"Error fetching reCAPTCHA config: {str(e)}")
+        return {"success": True, "enabled": False, "site_key": ""}
+
 @api_router.get("/branding")
 async def get_branding():
     """Get branding configuration (logo, favicon) - public"""
@@ -327,9 +378,13 @@ async def get_page_content(page: str, response: Response):
         raise HTTPException(status_code=500, detail="Failed to fetch content")
 
 @api_router.post("/contact", response_model=ContactSubmissionResponse)
-async def submit_contact_form(submission: ContactSubmissionCreate):
+async def submit_contact_form(submission: ContactSubmissionCreate, recaptcha_token: Optional[str] = None):
     """Submit a contact form"""
     try:
+        # Verify reCAPTCHA
+        if not await verify_recaptcha(recaptcha_token):
+            raise HTTPException(status_code=400, detail="reCAPTCHA verification failed. Please try again.")
+        
         contact_data = ContactSubmission(**submission.dict())
         await db.contact_submissions.insert_one(contact_data.dict())
         
@@ -348,14 +403,20 @@ async def submit_contact_form(submission: ContactSubmissionCreate):
             message="Thank you for your inquiry! We'll get back to you within 24 hours.",
             id=contact_data.id
         )
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error submitting contact form: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to submit form")
 
 @api_router.post("/support-ticket")
-async def create_support_ticket(ticket_data: SupportTicketCreate):
+async def create_support_ticket(ticket_data: SupportTicketCreate, recaptcha_token: Optional[str] = None):
     """Create a new support ticket (public)"""
     try:
+        # Verify reCAPTCHA
+        if not await verify_recaptcha(recaptcha_token):
+            raise HTTPException(status_code=400, detail="reCAPTCHA verification failed. Please try again.")
+        
         ticket_number = await generate_ticket_number()
         ticket = SupportTicket(
             **ticket_data.dict(),
@@ -379,6 +440,8 @@ async def create_support_ticket(ticket_data: SupportTicketCreate):
             "ticket_number": ticket_number,
             "ticket_id": ticket.id
         }
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error creating support ticket: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to create ticket")

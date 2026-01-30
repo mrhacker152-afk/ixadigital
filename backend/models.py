@@ -104,6 +104,11 @@ class SystemSettings(BaseModel):
         "favicon_url": "",
         "company_name": "IXA Digital"
     }
+    recaptcha_settings: dict = {
+        "enabled": False,
+        "site_key": "",
+        "secret_key": ""
+    }
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     updated_by: str = ""
 
@@ -111,6 +116,7 @@ class SettingsUpdate(BaseModel):
     email_settings: Optional[EmailSettings] = None
     seo_settings: Optional[SEOSettings] = None
     branding: Optional[dict] = None
+    recaptcha_settings: Optional[dict] = None
 
 # Content Management Models
 class HeroContent(BaseModel):
