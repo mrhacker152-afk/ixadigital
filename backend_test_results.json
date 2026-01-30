@@ -1,0 +1,134 @@
+{
+  "timestamp": "2026-01-30T06:44:43.721363",
+  "total_tests": 8,
+  "passed_tests": 7,
+  "success_rate": 87.5,
+  "test_results": [
+    {
+      "test_name": "Root API Endpoint",
+      "method": "GET",
+      "endpoint": "api/",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "message": "IXA Digital API"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Contact Form Submission",
+      "method": "POST",
+      "endpoint": "api/contact",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Thank you for your inquiry! We'll get back to you within 24 hours.",
+        "id": "4afabffb-bd86-453f-9d11-6c6e79105914"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Admin Login",
+      "method": "POST",
+      "endpoint": "api/admin/login",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Login successful",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2OTg0MTg4M30.xfkRbBd9dgCSkkyp7PJKdPc8tjoAvFDTOKxRU649Q-Q",
+        "admin": {
+          "username": "admin",
+          "id": "697c52bb63b4988556714922"
+        }
+      },
+      "error": null
+    },
+    {
+      "test_name": "Admin Stats",
+      "method": "GET",
+      "endpoint": "api/admin/stats",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "stats": {
+          "total": 1,
+          "new": 1,
+          "read": 0,
+          "contacted": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "test_name": "Admin Submissions",
+      "method": "GET",
+      "endpoint": "api/admin/submissions",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "count": 1,
+        "submissions": [
+          {
+            "_id": "697c535b03f5d70f871b6c4c",
+            "id": "4afabffb-bd86-453f-9d11-6c6e79105914",
+            "name": "Test User",
+            "email": "test@example.com",
+            "phone": "+919876543210",
+            "service": "web-development",
+            "message": "This is a test message for contact form submission.",
+            "created_at": "2026-01-30T06:44:43.211000",
+            "status": "new"
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "test_name": "Update Submission Status",
+      "method": "PATCH",
+      "endpoint": "api/admin/submissions/4afabffb-bd86-453f-9d11-6c6e79105914/status?status=read",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Status updated successfully"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Delete Submission",
+      "method": "DELETE",
+      "endpoint": "api/admin/submissions/4afabffb-bd86-453f-9d11-6c6e79105914",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true,
+        "message": "Submission deleted successfully"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Unauthorized Access Test",
+      "method": "GET",
+      "endpoint": "api/admin/submissions",
+      "expected_status": 401,
+      "actual_status": 403,
+      "success": false,
+      "response_data": null,
+      "error": {
+        "detail": "Not authenticated"
+      }
+    }
+  ]
+}
