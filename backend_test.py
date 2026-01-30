@@ -358,9 +358,14 @@ def main():
     # Test sequence
     print("\n📋 Testing Basic Endpoints...")
     tester.test_root_endpoint()
+    tester.test_seo_config_endpoint()
+    tester.test_sitemap_endpoint()
     
     print("\n📝 Testing Contact Form...")
     contact_id = tester.test_contact_form_submission()
+    
+    print("\n🎫 Testing Support Ticket Creation...")
+    ticket_id = tester.test_support_ticket_creation()
     
     print("\n🔐 Testing Admin Authentication...")
     if not tester.test_admin_login():
@@ -371,6 +376,17 @@ def main():
     print("\n📊 Testing Admin Protected Routes...")
     tester.test_admin_stats()
     submissions = tester.test_admin_submissions()
+    tickets = tester.test_admin_tickets()
+    
+    print("\n⚙️ Testing Admin Settings...")
+    tester.test_admin_settings_get()
+    tester.test_admin_settings_update()
+    
+    # Test ticket operations if we have a ticket
+    if ticket_id:
+        print(f"\n💬 Testing Ticket Operations for ticket: {ticket_id}")
+        tester.test_ticket_reply(ticket_id)
+        tester.test_ticket_status_update(ticket_id)
     
     # Test status update and deletion if we have submissions
     if submissions and len(submissions) > 0:
