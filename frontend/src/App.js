@@ -13,14 +13,22 @@ import CTA from "./components/CTA";
 import Footer from "./components/Footer";
 import ContactModal from "./components/ContactModal";
 import WhatsAppButton from "./components/WhatsAppButton";
+import SupportTicketModal from "./components/SupportTicketModal";
 import AdminLogin from "./components/AdminLogin";
 import AdminDashboard from "./components/AdminDashboard";
+import AdminSettings from "./components/AdminSettings";
+import AdminTickets from "./components/AdminTickets";
 
 const Home = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   const handleCTAClick = () => {
     setIsContactModalOpen(true);
+  };
+
+  const handleTicketClick = () => {
+    setIsTicketModalOpen(true);
   };
 
   const handleViewServices = () => {
@@ -40,8 +48,9 @@ const Home = () => {
       <Process />
       <Industries />
       <CTA onCTAClick={handleCTAClick} />
-      <Footer onCTAClick={handleCTAClick} />
+      <Footer onCTAClick={handleCTAClick} onTicketClick={handleTicketClick} />
       <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
+      <SupportTicketModal isOpen={isTicketModalOpen} onClose={() => setIsTicketModalOpen(false)} />
       <WhatsAppButton />
       <Toaster />
     </div>
@@ -56,6 +65,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/tickets" element={<AdminTickets />} />
         </Routes>
       </BrowserRouter>
       <Toaster />

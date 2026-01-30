@@ -1,8 +1,8 @@
 import React from 'react';
-import { Mail, Phone, Linkedin, Twitter, Facebook, Instagram } from 'lucide-react';
+import { Mail, Phone, Linkedin, Twitter, Facebook, Instagram, Ticket } from 'lucide-react';
 import { contactInfo } from '../data/mock';
 
-const Footer = ({ onCTAClick }) => {
+const Footer = ({ onCTAClick, onTicketClick }) => {
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
@@ -113,9 +113,16 @@ const Footer = ({ onCTAClick }) => {
             </ul>
             <button
               onClick={onCTAClick}
-              className="mt-6 w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              className="mt-6 w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors mb-2"
             >
               Request Consultation
+            </button>
+            <button
+              onClick={onTicketClick}
+              className="w-full bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
+            >
+              <Ticket size={18} className="mr-2" />
+              Create Support Ticket
             </button>
           </div>
         </div>
