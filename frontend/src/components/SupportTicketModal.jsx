@@ -7,7 +7,9 @@ import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { toast } from 'sonner';
 import axios from 'axios';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { Ticket, X } from 'lucide-react';
+import { useRecaptcha } from '../hooks/useRecaptcha';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -23,6 +25,8 @@ const SupportTicketModal = ({ isOpen, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ticketNumber, setTicketNumber] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState('');
+  const { config: recaptchaConfig } = useRecaptcha();
 
   const categories = [
     'Technical Support',
@@ -42,10 +46,22 @@ const SupportTicketModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (recaptchaConfig.enabled && !recaptchaToken) {
+      toast.error('Please complete the reCAPTCHA verification');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/support-ticket`, formData);
+      const params = new URLSearchParams();
+      if (recaptchaToken) {
+        params.append('recaptcha_token', recaptchaToken);
+      }
+      
+      const url = `${BACKEND_URL}/api/support-ticket${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await axios.post(url, formData);
       setTicketNumber(response.data.ticket_number);
       setShowSuccess(true);
       toast.success(`Ticket created: ${response.data.ticket_number}`);
@@ -59,6 +75,7 @@ const SupportTicketModal = ({ isOpen, onClose }) => {
         subject: '',
         description: ''
       });
+      setRecaptchaToken('');
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create ticket');
     } finally {
@@ -169,6 +186,15 @@ const SupportTicketModal = ({ isOpen, onClose }) => {
                   className="mt-1"
                 />
               </div>
+
+              {recaptchaConfig.enabled && recaptchaConfig.site_key && (
+                <div className="flex justify-center">
+                  <ReCAPTCHA
+                    sitekey={recaptchaConfig.site_key}
+                    onChange={(token) => setRecaptchaToken(token || '')}
+                  />
+                </div>
+              )}
 
               <Button
                 type="submit"
