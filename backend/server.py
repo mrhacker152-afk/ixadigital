@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends, Response, File, 
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.gzip import GZipMiddleware
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -9,9 +10,10 @@ import os
 import logging
 from pathlib import Path
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import shutil
 import uuid as uuid_lib
+from functools import lru_cache
 
 from models import (
     ContactSubmission,
@@ -53,7 +55,10 @@ db = client[os.environ['DB_NAME']]
 # Create the main app without a prefix
 app = FastAPI()
 
-# Mount static files directory
+# Add GZip compression middleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Mount static files directory with caching
 app.mount("/static", StaticFiles(directory=str(ROOT_DIR / "static")), name="static")
 
 # Create a router with the /api prefix
@@ -68,6 +73,60 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Cache for frequently accessed data
+_branding_cache = None
+_branding_cache_time = None
+_seo_cache = None
+_seo_cache_time = None
+CACHE_DURATION = 300  # 5 minutes
+
+async def get_cached_branding():
+    """Get branding with caching"""
+    global _branding_cache, _branding_cache_time
+    
+    now = datetime.utcnow()
+    if _branding_cache and _branding_cache_time:
+        if (now - _branding_cache_time).total_seconds() < CACHE_DURATION:
+            return _branding_cache
+    
+    settings = await db.settings.find_one()
+    if settings and settings.get('branding'):
+        _branding_cache = settings['branding']
+    else:
+        _branding_cache = {
+            "logo_url": "https://customer-assets.emergentagent.com/job_a08c0b50-0e68-4792-b6a6-4a15ac002d5c/artifacts/3mcpq5px_Logo.jpeg",
+            "favicon_url": "",
+            "company_name": "IXA Digital"
+        }
+    _branding_cache_time = now
+    return _branding_cache
+
+async def get_cached_seo():
+    """Get SEO config with caching"""
+    global _seo_cache, _seo_cache_time
+    
+    now = datetime.utcnow()
+    if _seo_cache and _seo_cache_time:
+        if (now - _seo_cache_time).total_seconds() < CACHE_DURATION:
+            return _seo_cache
+    
+    settings = await db.settings.find_one()
+    if settings and settings.get('seo_settings'):
+        _seo_cache = settings['seo_settings']
+    else:
+        from models import SEOSettings
+        _seo_cache = SEOSettings().dict()
+    _seo_cache_time = now
+    return _seo_cache
+
+def clear_cache():
+    """Clear all caches"""
+    global _branding_cache, _branding_cache_time, _seo_cache, _seo_cache_time
+    _branding_cache = None
+    _branding_cache_time = None
+    _seo_cache = None
+    _seo_cache_time = None
 
 # Helper function to get email service
 async def get_email_service():
@@ -251,12 +310,14 @@ async def get_branding():
         raise HTTPException(status_code=500, detail="Failed to fetch branding")
 
 @api_router.get("/page-content/{page}")
-async def get_page_content(page: str):
-    """Get page content (public)"""
+async def get_page_content(page: str, response: Response):
+    """Get page content (public) with caching"""
     try:
+        # Set cache headers
+        response.headers["Cache-Control"] = "public, max-age=300"  # 5 minutes
+        
         content = await db.page_content.find_one({"page": page})
         if not content:
-            # Return default content
             return {"success": False, "message": "Content not found"}
         
         content["_id"] = str(content["_id"])
@@ -811,6 +872,9 @@ async def update_page_content(
             new_content = PageContent(page=content_update.page, **update_data)
             await db.page_content.insert_one(new_content.dict())
         
+        # Clear cache when content is updated
+        clear_cache()
+        
         return {"success": True, "message": "Content updated successfully"}
     except Exception as e:
         logger.error(f"Error updating content: {str(e)}")
@@ -840,9 +904,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add database indexes for better performance
+async def create_indexes():
+    """Create database indexes for better query performance"""
+    try:
+        # Contact submissions indexes
+        await db.contact_submissions.create_index("created_at")
+        await db.contact_submissions.create_index("status")
+        await db.contact_submissions.create_index("email")
+        
+        # Support tickets indexes
+        await db.support_tickets.create_index("ticket_number")
+        await db.support_tickets.create_index("customer_email")
+        await db.support_tickets.create_index("status")
+        await db.support_tickets.create_index("created_at")
+        
+        # Page content index
+        await db.page_content.create_index("page", unique=True)
+        
+        logger.info("Database indexes created successfully")
+    except Exception as e:
+        logger.warning(f"Index creation warning: {str(e)}")
+
 @app.on_event("startup")
 async def startup_event():
     await init_defaults()
+    await create_indexes()
     logger.info("Application started")
 
 @app.on_event("shutdown")
