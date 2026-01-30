@@ -194,12 +194,12 @@ const SupportTicketModal = ({ isOpen, onClose }) => {
               You'll receive updates via email.
             </p>
             <div className="space-y-3">
-              <a
-                href="/track-ticket"
-                className="block w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              <button
+                onClick={() => window.location.href = '/track-ticket'}
+                className="block w-full bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors text-center"
               >
                 Track Your Ticket
-              </a>
+              </button>
               <Button onClick={handleClose} variant="outline" className="w-full">
                 Close
               </Button>

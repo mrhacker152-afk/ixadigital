@@ -23,7 +23,9 @@ from models import (
     SystemSettings,
     SettingsUpdate,
     EmailSettings,
-    SEOSettings
+    SEOSettings,
+    PageContent,
+    ContentUpdate
 )
 from auth import (
     get_password_hash,
@@ -97,6 +99,24 @@ async def init_defaults():
         default_settings = SystemSettings()
         await db.settings.insert_one(default_settings.dict())
         logger.info("Default settings created")
+    
+    # Create default homepage content
+    existing_content = await db.page_content.find_one({"page": "homepage"})
+    if not existing_content:
+        from models import PageContent, HeroContent, AboutContent, FooterContent
+        default_content = PageContent(
+            page="homepage",
+            hero=HeroContent(),
+            about=AboutContent(),
+            footer=FooterContent(),
+            cta_section={
+                "headline": "Let's Build Your Digital Growth Engine",
+                "description": "Ready to scale your business with data-driven strategies and cutting-edge solutions?",
+                "button_text": "Start Your Project"
+            }
+        )
+        await db.page_content.insert_one(default_content.dict())
+        logger.info("Default homepage content created")
 
 # Generate ticket number
 async def generate_ticket_number():
@@ -155,6 +175,10 @@ async def customer_reply_to_ticket(
         if not ticket:
             raise HTTPException(status_code=404, detail="Ticket not found or email doesn't match")
         
+        # Check if ticket is closed
+        if ticket.get("status") == "closed":
+            raise HTTPException(status_code=400, detail="Cannot reply to a closed ticket")
+        
         reply = TicketReply(
             author=ticket["customer_name"],
             message=reply_message,
@@ -196,6 +220,21 @@ async def customer_reply_to_ticket(
     except Exception as e:
         logger.error(f"Error adding customer reply: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to add reply")
+
+@api_router.get("/page-content/{page}")
+async def get_page_content(page: str):
+    """Get page content (public)"""
+    try:
+        content = await db.page_content.find_one({"page": page})
+        if not content:
+            # Return default content
+            return {"success": False, "message": "Content not found"}
+        
+        content["_id"] = str(content["_id"])
+        return {"success": True, "content": content}
+    except Exception as e:
+        logger.error(f"Error fetching page content: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch content")
 
 @api_router.post("/contact", response_model=ContactSubmissionResponse)
 async def submit_contact_form(submission: ContactSubmissionCreate):
@@ -602,6 +641,83 @@ async def test_email_settings(current_admin: dict = Depends(get_current_admin)):
     except Exception as e:
         logger.error(f"Error testing email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Content Management Routes (Admin)
+@api_router.get("/admin/content/{page}")
+async def get_admin_page_content(page: str, current_admin: dict = Depends(get_current_admin)):
+    """Get page content for editing (Admin only)"""
+    try:
+        content = await db.page_content.find_one({"page": page})
+        if not content:
+            return {"success": False, "message": "Content not found", "content": None}
+        
+        content["_id"] = str(content["_id"])
+        return {"success": True, "content": content}
+    except Exception as e:
+        logger.error(f"Error fetching content: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch content")
+
+@api_router.put("/admin/content")
+async def update_page_content(
+    content_update: ContentUpdate,
+    current_admin: dict = Depends(get_current_admin)
+):
+    """Update page content (Admin only)"""
+    try:
+        existing_content = await db.page_content.find_one({"page": content_update.page})
+        
+        update_data = {
+            "updated_at": datetime.utcnow(),
+            "updated_by": current_admin["username"]
+        }
+        
+        # Update only provided fields
+        if content_update.hero:
+            update_data["hero"] = content_update.hero.dict()
+        if content_update.about:
+            update_data["about"] = content_update.about.dict()
+        if content_update.services:
+            update_data["services"] = [s.dict() for s in content_update.services]
+        if content_update.menu_items:
+            update_data["menu_items"] = [m.dict() for m in content_update.menu_items]
+        if content_update.process_steps:
+            update_data["process_steps"] = [p.dict() for p in content_update.process_steps]
+        if content_update.industries:
+            update_data["industries"] = [i.dict() for i in content_update.industries]
+        if content_update.footer:
+            update_data["footer"] = content_update.footer.dict()
+        if content_update.cta_section:
+            update_data["cta_section"] = content_update.cta_section
+        
+        if existing_content:
+            result = await db.page_content.update_one(
+                {"page": content_update.page},
+                {"$set": update_data}
+            )
+            if result.modified_count == 0:
+                return {"success": False, "message": "No changes made"}
+        else:
+            # Create new content
+            new_content = PageContent(page=content_update.page, **update_data)
+            await db.page_content.insert_one(new_content.dict())
+        
+        return {"success": True, "message": "Content updated successfully"}
+    except Exception as e:
+        logger.error(f"Error updating content: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update content")
+
+@api_router.get("/admin/content-list")
+async def get_content_list(current_admin: dict = Depends(get_current_admin)):
+    """Get list of all editable pages (Admin only)"""
+    try:
+        pages = await db.page_content.find().to_list(100)
+        for page in pages:
+            page["_id"] = str(page["_id"])
+        
+        return {"success": True, "pages": pages}
+    except Exception as e:
+        logger.error(f"Error fetching content list: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch content list")
 
 # Include the router in the main app
 app.include_router(api_router)

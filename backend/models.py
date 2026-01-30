@@ -105,3 +105,86 @@ class SystemSettings(BaseModel):
 class SettingsUpdate(BaseModel):
     email_settings: Optional[EmailSettings] = None
     seo_settings: Optional[SEOSettings] = None
+
+# Content Management Models
+class HeroContent(BaseModel):
+    headline: str = "Results-Driven SEO, Marketing & Development Solutions"
+    subheadline: str = "Helping brands grow through SEO, digital marketing, web & app development"
+    cta_primary: str = "Get a Free Consultation"
+    cta_secondary: str = "View Our Services"
+    stats: List[dict] = [
+        {"value": "500+", "label": "Projects Delivered"},
+        {"value": "98%", "label": "Client Satisfaction"},
+        {"value": "5+", "label": "Years Experience"}
+    ]
+
+class AboutContent(BaseModel):
+    title: str = "About IXA Digital"
+    subtitle: str = "Your long-term digital growth partner"
+    headline: str = "Driving Measurable Growth Through Digital Excellence"
+    paragraphs: List[str] = [
+        "At IXA Digital, we don't just deliver projects—we deliver results.",
+        "From startups to enterprises, we partner with businesses to create impactful digital solutions.",
+        "Whether you need to dominate search rankings or develop cutting-edge applications—we're your growth partner."
+    ]
+    value_props: List[dict] = [
+        {"title": "Results-Focused Execution", "description": "Every strategy tied to measurable outcomes"},
+        {"title": "Scalable Solutions", "description": "Built with growth in mind from day one"},
+        {"title": "True Partnership", "description": "Transparent communication and genuine commitment"}
+    ]
+
+class ServiceItem(BaseModel):
+    id: int
+    title: str
+    description: str
+    features: List[str]
+    image: str
+
+class MenuItem(BaseModel):
+    label: str
+    link: str
+    order: int
+
+class ProcessStep(BaseModel):
+    id: int
+    name: str
+    description: str
+
+class IndustryItem(BaseModel):
+    id: int
+    name: str
+    icon: str
+
+class FooterContent(BaseModel):
+    company_description: str = "Results-driven digital growth partner delivering SEO, marketing, web & app development solutions."
+    social_links: dict = {
+        "facebook": "#",
+        "twitter": "#",
+        "linkedin": "#",
+        "instagram": "#"
+    }
+
+class PageContent(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    page: str  # "homepage", "services", etc.
+    hero: Optional[HeroContent] = None
+    about: Optional[AboutContent] = None
+    services: Optional[List[ServiceItem]] = None
+    menu_items: Optional[List[MenuItem]] = None
+    process_steps: Optional[List[ProcessStep]] = None
+    industries: Optional[List[IndustryItem]] = None
+    footer: Optional[FooterContent] = None
+    cta_section: Optional[dict] = None
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_by: str = ""
+
+class ContentUpdate(BaseModel):
+    page: str
+    hero: Optional[HeroContent] = None
+    about: Optional[AboutContent] = None
+    services: Optional[List[ServiceItem]] = None
+    menu_items: Optional[List[MenuItem]] = None
+    process_steps: Optional[List[ProcessStep]] = None
+    industries: Optional[List[IndustryItem]] = None
+    footer: Optional[FooterContent] = None
+    cta_section: Optional[dict] = None
