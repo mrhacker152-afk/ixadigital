@@ -31,7 +31,10 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
     await databases.admins.read();
-    const admin = databases.admins.data.users.find(u => u.username === username);
+    // Support login with email or username
+    const admin = databases.admins.data.users.find(
+      u => u.username === username || u.email === username
+    );
     
     if (!admin) {
       return res.status(401).json({ detail: 'Invalid username or password' });
