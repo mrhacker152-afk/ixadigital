@@ -13,6 +13,8 @@ import CTA from "./components/CTA";
 import Footer from "./components/Footer";
 import ContactModal from "./components/ContactModal";
 import WhatsAppButton from "./components/WhatsAppButton";
+import AdminLogin from "./components/AdminLogin";
+import AdminDashboard from "./components/AdminDashboard";
 
 const Home = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -52,8 +54,11 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
+      <Toaster />
     </div>
   );
 }
